@@ -54,7 +54,7 @@ CHANNEL_COLORS = {
     "sms": PALETTE["coral"]
 }
 
-# Inject High-End Executive CSS Architecture
+# Inject High-End Executive CSS Architecture with Plot Padding
 st.markdown(f"""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -124,10 +124,10 @@ st.markdown(f"""
     
     /* Section Headings */
     .section-title {{
-        font-size: 17.5px;
+        font-size: 18px;
         font-weight: 700;
         color: {PALETTE['charcoal']};
-        margin: 28px 0px 12px 0px;
+        margin: 30px 0px 14px 0px;
         padding-bottom: 6px;
         border-bottom: 2px solid {PALETTE['sky']};
         display: inline-block;
@@ -139,7 +139,7 @@ st.markdown(f"""
         background-color: {PALETTE['bg_card']};
         border: 1px solid {PALETTE['border']};
         border-radius: 10px;
-        padding: 16px 18px;
+        padding: 18px 20px;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.02);
         transition: transform 0.2s ease, box-shadow 0.2s ease;
         height: 100%;
@@ -179,6 +179,16 @@ st.markdown(f"""
     .accent-amber {{ border-top: 3.5px solid {PALETTE['amber']}; }}
     .accent-coral {{ border-top: 3.5px solid {PALETTE['coral']}; }}
     
+    /* Plot Card Container with Generous Padding */
+    .plot-card {{
+        background-color: #ffffff;
+        border: 1px solid #e4e7eb;
+        border-radius: 12px;
+        padding: 22px 24px 18px 24px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03), 0 6px 14px rgba(0, 0, 0, 0.02);
+        margin-bottom: 22px;
+    }}
+    
     /* Executive Callout Boxes */
     .exec-takeaway-box {{
         background-color: #f8fafc;
@@ -195,7 +205,7 @@ st.markdown(f"""
         background-color: #fff1f2;
         border: 1px solid #fecdd3;
         border-left: 4px solid {PALETTE['crimson']};
-        padding: 14px 18px;
+        padding: 16px 20px;
         border-radius: 0px 8px 8px 0px;
         margin: 14px 0px;
         font-size: 13.5px;
@@ -206,7 +216,7 @@ st.markdown(f"""
         background: linear-gradient(135deg, #f0f7ff 0%, #ffffff 100%);
         border: 1px solid #bfdbfe;
         border-radius: 12px;
-        padding: 18px 22px;
+        padding: 20px 24px;
         margin: 20px 0px;
         box-shadow: 0 4px 14px rgba(37, 99, 235, 0.06);
     }}
@@ -221,12 +231,10 @@ st.markdown(f"""
 def load_and_prepare_data(file_source):
     df = pd.read_csv(file_source, low_memory=False)
     
-    # Missing value cleaning
     df['client_location'] = df['client_location'].fillna('Unknown / Virtual')
     df['trainer_name'] = df['trainer_name'].fillna('Not Specified')
     df['error_message'] = df['error_message'].fillna('None (Success)')
     
-    # Datetime coercion
     for col in ['notification_created_at', 'delivery_created_at', 'dispatched_at', 'sent_at']:
         if col in df.columns:
             df[col] = pd.to_datetime(df[col], errors='coerce')
@@ -346,13 +354,14 @@ st.sidebar.info(f"Cohort: **{len(filtered_df):,}** delivery legs across **{len(f
 
 
 # ==============================================================================
-# 3. EXECUTIVE STYLING HELPER FOR PLOTLY
+# 3. EXECUTIVE STYLING & INFO POPOVER HELPERS
 # ==============================================================================
-def apply_exec_chart_theme(fig, height=330, show_legend=True):
+def apply_exec_chart_theme(fig, height=350, show_legend=True, pad_l=35, pad_r=30, pad_t=45, pad_b=35):
+    """Applies generous executive padding, crisp typography, and clean gridlines to Plotly figures."""
     fig.update_layout(
         font=dict(family='Inter, -apple-system, sans-serif', size=11.5, color=PALETTE['charcoal']),
         height=height,
-        margin=dict(l=15, r=20, t=30, b=15),
+        margin=dict(l=pad_l, r=pad_r, t=pad_t, b=pad_b),
         plot_bgcolor='rgba(0,0,0,0)',
         paper_bgcolor='rgba(0,0,0,0)',
         showlegend=show_legend,
@@ -363,7 +372,9 @@ def apply_exec_chart_theme(fig, height=330, show_legend=True):
             xanchor='right',
             x=1,
             font=dict(size=11),
-            bgcolor='rgba(255,255,255,0.85)'
+            bgcolor='rgba(255,255,255,0.9)',
+            bordercolor='#e2e8f0',
+            borderwidth=1
         ),
         hoverlabel=dict(
             bgcolor='#ffffff',
@@ -375,6 +386,23 @@ def apply_exec_chart_theme(fig, height=330, show_legend=True):
     fig.update_xaxes(showgrid=True, gridcolor='#f1f5f9', zeroline=False)
     fig.update_yaxes(showgrid=True, gridcolor='#f1f5f9', zeroline=False)
     return fig
+
+
+def render_chart_header_with_info(title, significance, calculation, action, key_id):
+    """Renders the chart title with a dedicated 'i' info popover explaining physical significance & calculations."""
+    col_t, col_i = st.columns([0.88, 0.12])
+    with col_t:
+        st.markdown(f"<div style='font-size: 15.5px; font-weight: 700; color: {PALETTE['charcoal']}; margin-bottom: 4px;'>{title}</div>", unsafe_allow_html=True)
+    with col_i:
+        with st.popover("ℹ️ Info", help="Click to view plot significance & calculations"):
+            st.markdown(f"<h4 style='color:{PALETTE['navy']}; margin:0px 0px 8px 0px; font-size:15px;'>ℹ️ {title}</h4>", unsafe_allow_html=True)
+            st.markdown(f"""
+            <div style='font-size:12.5px; line-height:1.55; color:{PALETTE['charcoal']};'>
+                <p style='margin-bottom:8px;'><strong>🎯 Physical Significance:</strong><br>{significance}</p>
+                <p style='margin-bottom:8px;'><strong>📐 How It Is Plotted / Calculated:</strong><br>{calculation}</p>
+                <p style='margin-bottom:0px;'><strong>💡 Executive Action:</strong><br>{action}</p>
+            </div>
+            """, unsafe_allow_html=True)
 
 
 # ==============================================================================
@@ -564,7 +592,14 @@ def render_funnel_and_leakage():
     col_f1, col_f2 = st.columns([1.1, 0.9])
 
     with col_f1:
-        st.markdown("##### 📌 Pipeline Snapshot & Conversion Funnel")
+        st.markdown('<div class="plot-card">', unsafe_allow_html=True)
+        render_chart_header_with_info(
+            title="📌 Pipeline Snapshot & Conversion Funnel",
+            significance="Measures end-to-end communication attrition as messages traverse from initial WMS trigger creation across gateway dispatch to candidate receipt. Essential for identifying which stage drops the most volume.",
+            calculation="Stage 1: Distinct COUNT(notification_id). Stage 2: COUNT(dispatched_at IS NOT NULL). Stage 3: SUM(sent_flag == 1). Stage 4: COUNT(DISTINCT notification_id WHERE sent_legs >= 1). Stage 5: COUNT(delivered_at IS NOT NULL). Plotted as horizontal bar with step retention percentages.",
+            action="Integrate carrier webhook endpoints to record actual device receipt confirmations (Stage 5).",
+            key_id="pop_funnel"
+        )
         
         total_n = len(filtered_notif_df)
         total_l = len(filtered_df)
@@ -605,15 +640,24 @@ def render_funnel_and_leakage():
 
         fig_funnel.update_layout(
             yaxis=dict(autorange="reversed", showgrid=False),
-            xaxis=dict(title="Volume", showgrid=True, gridcolor='#f1f5f9')
+            xaxis=dict(title="Volume", showgrid=True, gridcolor='#f1f5f9'),
+            bargap=0.25
         )
-        st.plotly_chart(apply_exec_chart_theme(fig_funnel, height=320, show_legend=False))
+        st.plotly_chart(apply_exec_chart_theme(fig_funnel, height=340, show_legend=False, pad_l=40, pad_r=35))
 
         with st.expander(" View Funnel Conversion Data Table"):
             st.dataframe(pd.DataFrame({"Stage": stages, "Volume": values, "Conversion Rate": percents}), hide_index=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
     with col_f2:
-        st.markdown("##### ⚠️ Top Drop-off Reasons (Leakage Breakdown)")
+        st.markdown('<div class="plot-card">', unsafe_allow_html=True)
+        render_chart_header_with_info(
+            title="⚠️ Top Drop-off Reasons (Leakage Breakdown)",
+            significance="Categorizes all 3,007 failed and skipped delivery attempts into root-cause buckets, separating code-level parameter bugs from device SDK token gaps and upstream missing data.",
+            calculation="Filter where status IN ('FAILED', 'SKIPPED'). Group by error_message, count occurrences, compute Share % = (Count / Total Leakage) * 100. Plotted as descending horizontal bars with severity color mapping.",
+            action="Prioritize hotfixing the WhatsApp Meta API 131008 payload error to instantly eliminate 36.2% of all engine leakage.",
+            key_id="pop_leakage"
+        )
         
         leak_df = filtered_df[filtered_df['status'].isin(['FAILED', 'SKIPPED'])].copy()
         leak_counts = leak_df['error_message'].value_counts().reset_index()
@@ -622,7 +666,6 @@ def render_funnel_and_leakage():
         leak_counts['Percentage'] = (leak_counts['Count'] / total_leak * 100).round(1) if total_leak > 0 else 0
         top_leaks = leak_counts.head(6)
 
-        # Color codes based on severity
         def get_leak_color(reason):
             if "Meta API" in reason: return PALETTE["coral"]
             if "push tokens" in reason: return PALETTE["crimson"]
@@ -631,7 +674,7 @@ def render_funnel_and_leakage():
 
         fig_leak = go.Figure(go.Bar(
             x=top_leaks['Count'],
-            y=[r[:38] + '...' if len(r) > 38 else r for r in top_leaks['Reason']],
+            y=[r[:36] + '...' if len(r) > 36 else r for r in top_leaks['Reason']],
             orientation='h',
             marker=dict(
                 color=[get_leak_color(r) for r in top_leaks['Reason']],
@@ -645,12 +688,14 @@ def render_funnel_and_leakage():
 
         fig_leak.update_layout(
             yaxis=dict(autorange="reversed", showgrid=False),
-            xaxis=dict(title="Leakage Count", showgrid=True, gridcolor='#f1f5f9')
+            xaxis=dict(title="Leakage Count", showgrid=True, gridcolor='#f1f5f9'),
+            bargap=0.25
         )
-        st.plotly_chart(apply_exec_chart_theme(fig_leak, height=320, show_legend=False))
+        st.plotly_chart(apply_exec_chart_theme(fig_leak, height=340, show_legend=False, pad_l=40, pad_r=35))
 
         with st.expander(" View Leakage Reasons Table"):
             st.dataframe(leak_counts, hide_index=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
 
 def render_time_series():
@@ -668,7 +713,14 @@ def render_time_series():
     daily_df['date_str'] = daily_df['notification_date'].astype(str)
 
     with col_t1:
-        st.markdown("##### 📅 Daily Dispatch Momentum & Sent Rate %")
+        st.markdown('<div class="plot-card">', unsafe_allow_html=True)
+        render_chart_header_with_info(
+            title="📅 Daily Dispatch Momentum & Sent Rate %",
+            significance="Monitors daily engine delivery volume and detects temporal quality shifts, carrier outages, or batch failure events (such as the September 19 outage).",
+            calculation="Group by notification_date. Left axis: Stacked bars of SENT, SKIPPED, and FAILED counts. Right axis: Dual-axis trendline of Sent Rate % = (Sent Count / Total Daily Attempts) * 100.",
+            action="Establish real-time PagerDuty alerting if the daily success rate drops below 50%.",
+            key_id="pop_timeseries"
+        )
         
         fig_time = go.Figure()
         fig_time.add_trace(go.Bar(
@@ -709,12 +761,21 @@ def render_time_series():
                 side='right',
                 range=[0, 105],
                 showgrid=False
-            )
+            ),
+            bargap=0.3
         )
-        st.plotly_chart(apply_exec_chart_theme(fig_time, height=330))
+        st.plotly_chart(apply_exec_chart_theme(fig_time, height=340, pad_l=35, pad_r=45))
+        st.markdown('</div>', unsafe_allow_html=True)
 
     with col_t2:
-        st.markdown("##### 📆 Volume Influx by Day of Week")
+        st.markdown('<div class="plot-card">', unsafe_allow_html=True)
+        render_chart_header_with_info(
+            title="📆 Volume Influx by Day of Week",
+            significance="Assesses human and batch scheduling patterns across the work week, revealing when recruiting and training operations place maximum demand on communication infrastructure.",
+            calculation="COUNT(delivery_id) aggregated by notification_day_name, ordered from Monday to Sunday. Percentage share = (Day Count / Total Volume) * 100.",
+            action="Stagger batch scheduling jobs to avoid heavy Monday morning gateway bottlenecks.",
+            key_id="pop_dow"
+        )
         
         day_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
         day_cnts = filtered_df['notification_day_name'].value_counts().reindex(day_order).dropna().reset_index()
@@ -734,12 +795,22 @@ def render_time_series():
 
         fig_dow.update_layout(
             xaxis=dict(title="", showgrid=False),
-            yaxis=dict(title="Volume", showgrid=True, gridcolor='#f1f5f9', range=[0, day_cnts['Count'].max() * 1.25])
+            yaxis=dict(title="Volume", showgrid=True, gridcolor='#f1f5f9', range=[0, day_cnts['Count'].max() * 1.25]),
+            bargap=0.3
         )
-        st.plotly_chart(apply_exec_chart_theme(fig_dow, height=330, show_legend=False))
+        st.plotly_chart(apply_exec_chart_theme(fig_dow, height=340, show_legend=False, pad_l=35, pad_r=30, pad_t=45))
+        st.markdown('</div>', unsafe_allow_html=True)
 
-    # Heatmap
-    st.markdown("##### 🕒 Temporal Influx Heatmap (Day of Week vs. Hour of Day)")
+    # Heatmap Card Container
+    st.markdown('<div class="plot-card">', unsafe_allow_html=True)
+    render_chart_header_with_info(
+        title="🕒 Temporal Influx Heatmap (Day of Week vs. Hour of Day)",
+        significance="Reveals diurnal operational scheduling habits and identifies peak dispatch hours where gateway throttling or candidate notification fatigue is most likely to occur.",
+        calculation="2D Pivot Table: Index = notification_day_name, Columns = notification_hour (0..23), Values = COUNT(delivery_id). Plotted with a customized Teal-to-Navy color intensity gradient and 12-hour AM/PM formatting.",
+        action="Shift automated candidate reminders to 10:00 AM–2:00 PM local time to maximize candidate attention and read rates.",
+        key_id="pop_heat"
+    )
+    
     pivot_heat = filtered_df.pivot_table(
         index='notification_day_name',
         columns='notification_hour',
@@ -777,14 +848,8 @@ def render_time_series():
         xaxis=dict(title="Dispatch Hour (UTC)", showgrid=False),
         yaxis=dict(title="", autorange="reversed", showgrid=False)
     )
-    st.plotly_chart(apply_exec_chart_theme(fig_heat, height=270, show_legend=False))
-
-    st.markdown(f"""
-    <div style="font-size: 12.5px; color: {PALETTE['muted']}; margin-top: -6px; margin-bottom: 15px;">
-        💡 <strong>Executive Scheduling Note:</strong> Peak operational volume clusters on <strong>Mondays (1,494 legs)</strong> between 
-        <strong>04:00 and 08:00 UTC (9:30 AM–1:30 PM IST)</strong>, corresponding to morning batch synchronization jobs.
-    </div>
-    """, unsafe_allow_html=True)
+    st.plotly_chart(apply_exec_chart_theme(fig_heat, height=280, show_legend=False, pad_l=40, pad_r=30, pad_t=30))
+    st.markdown('</div>', unsafe_allow_html=True)
 
 
 def render_channels_and_providers():
@@ -797,7 +862,14 @@ def render_channels_and_providers():
         if col not in ct_ch.columns: ct_ch[col] = 0
 
     with col_c1:
-        st.markdown("##### 📊 Channel Delivery Split (Sent vs. Skipped vs. Failed)")
+        st.markdown('<div class="plot-card">', unsafe_allow_html=True)
+        render_chart_header_with_info(
+            title="📊 Channel Delivery Split (Sent vs. Skipped vs. Failed)",
+            significance="Compares the delivery success and failure profiles across communication channels to evaluate vendor efficacy and isolate channel-specific integration failures.",
+            calculation="Cross-tabulation of channel vs. status. Plotted as stacked vertical bars displaying raw attempt counts for SENT (Green), SKIPPED (Amber), and FAILED (Coral).",
+            action="Immediately patch the WhatsApp dispatcher payload to convert 1,090 failed attempts into successful candidate deliveries.",
+            key_id="pop_ch_split"
+        )
         
         fig_ch = go.Figure()
         fig_ch.add_trace(go.Bar(x=ct_ch.index, y=ct_ch['SENT'], name='SENT', marker_color=STATUS_COLORS['SENT']))
@@ -807,12 +879,21 @@ def render_channels_and_providers():
         fig_ch.update_layout(
             barmode='stack',
             xaxis=dict(title="Channel", showgrid=False),
-            yaxis=dict(title="Attempts", showgrid=True, gridcolor='#f1f5f9')
+            yaxis=dict(title="Attempts", showgrid=True, gridcolor='#f1f5f9'),
+            bargap=0.3
         )
-        st.plotly_chart(apply_exec_chart_theme(fig_ch, height=320))
+        st.plotly_chart(apply_exec_chart_theme(fig_ch, height=330, pad_l=35, pad_r=30))
+        st.markdown('</div>', unsafe_allow_html=True)
 
     with col_c2:
-        st.markdown("##### 🍩 Channel Volume Share & Health Status")
+        st.markdown('<div class="plot-card">', unsafe_allow_html=True)
+        render_chart_header_with_info(
+            title="🍩 Channel Volume Share & Redundancy Allocation",
+            significance="Shows how communication redundancy is distributed across Email, WhatsApp, Push, and SMS to confirm whether multi-channel policies are firing properly.",
+            calculation="SUM(delivery_id) grouped by channel. Rendered as a Plotly Donut Chart (hole=0.65) with total volume callout in the center.",
+            action="Audit why SMS accounts for only 0.15% of requests despite being the designated offline fallback channel.",
+            key_id="pop_ch_donut"
+        )
         
         ch_sums = ct_ch.sum(axis=1)
         fig_donut = go.Figure(go.Pie(
@@ -827,7 +908,8 @@ def render_channels_and_providers():
         fig_donut.update_layout(
             annotations=[dict(text="<b>3,924</b><br><span style='font-size:11px;color:#808494'>Legs</span>", x=0.5, y=0.5, font_size=16, showarrow=False)]
         )
-        st.plotly_chart(apply_exec_chart_theme(fig_donut, height=320, show_legend=False))
+        st.plotly_chart(apply_exec_chart_theme(fig_donut, height=330, show_legend=False, pad_l=30, pad_r=30))
+        st.markdown('</div>', unsafe_allow_html=True)
 
     # Channel Matrix Cards
     card_e1, card_e2, card_e3, card_e4 = st.columns(4)
@@ -871,7 +953,15 @@ def render_demographics_and_segmentation():
     col_d1, col_d2 = st.columns([1, 1])
 
     with col_d1:
-        st.markdown("##### 🏢 Volume & Delivery by Client Facility")
+        st.markdown('<div class="plot-card">', unsafe_allow_html=True)
+        render_chart_header_with_info(
+            title="🏢 Volume & Delivery by Client Facility",
+            significance="Examines whether communication drop-offs cluster at particular manufacturing plants, regional training hubs, or virtual centers.",
+            calculation="Cross-tabulation of client_location vs status, ordered descending by total facility volume. Top 6 facilities rendered as stacked horizontal bars.",
+            action="Target the 'Unknown / Virtual' segment where 88.9% of candidate notifications fail.",
+            key_id="pop_loc"
+        )
+        
         loc_ct = pd.crosstab(filtered_df['client_location'], filtered_df['status']).fillna(0)
         for col in ['SENT', 'FAILED', 'SKIPPED']:
             if col not in loc_ct.columns: loc_ct[col] = 0
@@ -886,12 +976,22 @@ def render_demographics_and_segmentation():
         fig_loc.update_layout(
             barmode='stack',
             xaxis=dict(title="Attempts", showgrid=True, gridcolor='#f1f5f9'),
-            yaxis=dict(autorange='reversed', showgrid=False)
+            yaxis=dict(autorange='reversed', showgrid=False),
+            bargap=0.25
         )
-        st.plotly_chart(apply_exec_chart_theme(fig_loc, height=310))
+        st.plotly_chart(apply_exec_chart_theme(fig_loc, height=330, pad_l=40, pad_r=35))
+        st.markdown('</div>', unsafe_allow_html=True)
 
     with col_d2:
-        st.markdown("##### 👨‍🏫 Delivery Success by Assigned Trainer")
+        st.markdown('<div class="plot-card">', unsafe_allow_html=True)
+        render_chart_header_with_info(
+            title="👨‍🏫 Delivery Success by Assigned Trainer",
+            significance="Identifies operational discrepancies across training coordinators, ensuring candidate class schedules are reliably delivered regardless of assigned instructor.",
+            calculation="Cross-tabulation of trainer_name vs status, ordered descending by assigned attempts. Top 6 trainers rendered as horizontal stacked bars.",
+            action="Standardize backend payload generation across trainer assignments to ensure consistent parameter injection.",
+            key_id="pop_trainer"
+        )
+        
         tr_ct = pd.crosstab(filtered_df['trainer_name'], filtered_df['status']).fillna(0)
         for col in ['SENT', 'FAILED', 'SKIPPED']:
             if col not in tr_ct.columns: tr_ct[col] = 0
@@ -906,9 +1006,11 @@ def render_demographics_and_segmentation():
         fig_tr.update_layout(
             barmode='stack',
             xaxis=dict(title="Attempts", showgrid=True, gridcolor='#f1f5f9'),
-            yaxis=dict(autorange='reversed', showgrid=False)
+            yaxis=dict(autorange='reversed', showgrid=False),
+            bargap=0.25
         )
-        st.plotly_chart(apply_exec_chart_theme(fig_tr, height=310))
+        st.plotly_chart(apply_exec_chart_theme(fig_tr, height=330, pad_l=40, pad_r=35))
+        st.markdown('</div>', unsafe_allow_html=True)
 
 
 def render_triggers_and_templates():
@@ -925,7 +1027,14 @@ def render_triggers_and_templates():
     trig_reach = trig_reach.sort_values(by='total', ascending=False)
 
     with col_tr1:
-        st.markdown("##### ⚡ Candidate Reachability % Across Business Triggers")
+        st.markdown('<div class="plot-card">', unsafe_allow_html=True)
+        render_chart_header_with_info(
+            title="⚡ Candidate Reachability % Across Business Triggers",
+            significance="Uncovers high-risk business triggers where candidate drop-offs are concentrated. Directly compares Onsite class scheduling with Online class scheduling.",
+            calculation="Group by trigger_type. Reachability Rate % = (COUNT(distinct notification_id WHERE sent_legs > 0) / COUNT(distinct notification_id)) * 100. Rendered as vertical bars with color tiers (Green >70%, Amber 40-70%, Red <40%).",
+            action="Focus operational intervention on online class onboarding workflows.",
+            key_id="pop_trig_reach"
+        )
         
         fig_reach = go.Figure(go.Bar(
             x=[t.replace('_', ' ').title() for t in trig_reach['trigger_type']],
@@ -940,21 +1049,22 @@ def render_triggers_and_templates():
 
         fig_reach.update_layout(
             xaxis=dict(title="", showgrid=False, tickangle=-15),
-            yaxis=dict(title="Reachability Rate %", showgrid=True, gridcolor='#f1f5f9', range=[0, 115])
+            yaxis=dict(title="Reachability Rate %", showgrid=True, gridcolor='#f1f5f9', range=[0, 115]),
+            bargap=0.3
         )
-        st.plotly_chart(apply_exec_chart_theme(fig_reach, height=320, show_legend=False))
+        st.plotly_chart(apply_exec_chart_theme(fig_reach, height=330, show_legend=False, pad_l=35, pad_r=30, pad_t=45))
+        st.markdown('</div>', unsafe_allow_html=True)
 
     with col_tr2:
-        st.markdown("##### 🚨 The Critical Disparity Callout")
-        
+        st.markdown('<div class="plot-card">', unsafe_allow_html=True)
         st.markdown(f"""
-        <div class="exec-alert-box" style="height: 285px; display: flex; flex-direction: column; justify-content: space-around;">
+        <div class="exec-alert-box" style="height: 310px; display: flex; flex-direction: column; justify-content: space-around;">
             <div>
                 <strong style="font-size: 15px; color: {PALETTE['crimson']};">Onsite (96.7%) vs. Online (25.8%) Disparity</strong><br>
-                <span style="font-size: 12.5px; color: {PALETTE['muted']};">Why is online onboarding silently dropping 3 out of 4 candidates?</span>
+                <span style="font-size: 12px; color: {PALETTE['muted']};">Why is online onboarding silently dropping 3 out of 4 candidates?</span>
             </div>
-            <div style="font-size: 13px; line-height: 1.5;">
-                • <strong>Onsite Classes (718 notifs):</strong> 694 candidates reached (<strong>96.7% reach</strong>). Recruiters capture verified email addresses in person.<br>
+            <div style="font-size: 12.8px; line-height: 1.55;">
+                • <strong>Onsite Classes (718 notifs):</strong> 694 candidates reached (<strong>96.7% reach</strong>). Recruiters capture verified email addresses during in-person documentation.<br>
                 • <strong>Online Classes (500 notifs):</strong> Only 129 reached (<strong>25.8% reach — 371 dropped</strong>). Candidates only supply mobile numbers.<br>
                 • <em>The Trap:</em> Mobile relies on WhatsApp (Meta 131008 fail) and Push (token absent). Without an email, <strong>100% communication failure is guaranteed</strong>.
             </div>
@@ -963,6 +1073,7 @@ def render_triggers_and_templates():
             </div>
         </div>
         """, unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
 
 def render_latency_and_sla():
@@ -973,7 +1084,14 @@ def render_latency_and_sla():
     lat_data = filtered_df['dispatch_to_sent_seconds'].dropna()
 
     with col_l1:
-        st.markdown("##### ⏱️ Dispatch-to-Sent Latency Distribution")
+        st.markdown('<div class="plot-card">', unsafe_allow_html=True)
+        render_chart_header_with_info(
+            title="⏱️ Dispatch-to-Sent Latency Distribution",
+            significance="Validates that gateway dispatch velocity adheres to real-time candidate delivery SLA thresholds (< 5.0 seconds) and monitors outlier processing spikes.",
+            calculation="Histogram of dispatch_to_sent_seconds across channels, overlaid with boxplot marginal and a red dashed reference line at the 5.0s SLA target.",
+            action="Maintain current WhatsApp gateway velocity (1.06s) and isolate email DNS lookup timeouts causing >30s outliers.",
+            key_id="pop_lat_hist"
+        )
         
         if len(lat_data) > 0:
             fig_hist = px.histogram(
@@ -984,19 +1102,27 @@ def render_latency_and_sla():
                 nbins=35,
                 marginal='box'
             )
-            # Add SLA Line at 5.0 seconds
             fig_hist.add_vline(x=5.0, line_dash="dash", line_color=PALETTE["coral"], annotation_text="5.0s SLA Target", annotation_position="top right")
             
             fig_hist.update_layout(
                 xaxis=dict(title="Seconds (Dispatch to Gateway Sent)", showgrid=True, gridcolor='#f1f5f9'),
-                yaxis=dict(title="Count", showgrid=True, gridcolor='#f1f5f9')
+                yaxis=dict(title="Count", showgrid=True, gridcolor='#f1f5f9'),
+                bargap=0.1
             )
-            st.plotly_chart(apply_exec_chart_theme(fig_hist, height=320))
+            st.plotly_chart(apply_exec_chart_theme(fig_hist, height=330, pad_l=35, pad_r=35, pad_t=40))
         else:
             st.info("No latency data available for current selection.")
+        st.markdown('</div>', unsafe_allow_html=True)
 
     with col_l2:
-        st.markdown("##### 🎯 Gateway SLA Benchmark Scorecard")
+        st.markdown('<div class="plot-card">', unsafe_allow_html=True)
+        render_chart_header_with_info(
+            title="🎯 Gateway SLA Benchmark Scorecard",
+            significance="Provides an executive compliance scorecard tracking operational percentiles against enterprise service-level agreement commitments.",
+            calculation="Percentile computations: P50 = median, P90 = quantile(0.90), P95 = quantile(0.95), P99 = quantile(0.99), Max = maximum observed dispatch_to_sent_seconds.",
+            action="All percentiles through P99 pass SLA commitments. Focus engineering on the single 92.02s outlier.",
+            key_id="pop_sla_table"
+        )
         
         if len(lat_data) > 0:
             p50 = lat_data.median()
@@ -1019,6 +1145,7 @@ def render_latency_and_sla():
                 • <strong>Email:</strong> 3.47s avg (occasional DNS timeout spikes up to 92s)
             </div>
             """, unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
 
 def render_action_plan_and_triage():
@@ -1066,8 +1193,15 @@ def render_action_plan_and_triage():
         </div>
         """, unsafe_allow_html=True)
 
-    # Raw Explorer Section
-    st.markdown("##### 🔍 Operational Failure Triage Explorer")
+    # Raw Explorer Section in a Styled Card
+    st.markdown('<div class="plot-card" style="margin-top: 24px;">', unsafe_allow_html=True)
+    render_chart_header_with_info(
+        title="🔍 Operational Failure Triage Explorer",
+        significance="Enables engineers and operations specialists to search, isolate, and debug individual candidate delivery events by external reference ID, error string, or channel.",
+        calculation="Dynamic string filtering across candidate_name, candidate_id, and external_ref_id, combined with multi-select column filtering on status and error_message.",
+        action="Export filtered failure records to CSV for immediate ticketing and engineering triage.",
+        key_id="pop_triage_table"
+    )
 
     col_s1, col_s2, col_s3 = st.columns([1.5, 1, 1])
     with col_s1:
@@ -1102,6 +1236,7 @@ def render_action_plan_and_triage():
         file_name=f"notification_engine_triage_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
         mime="text/csv"
     )
+    st.markdown('</div>', unsafe_allow_html=True)
 
 
 # ==============================================================================
