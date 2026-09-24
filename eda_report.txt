@@ -1,0 +1,221 @@
+Total Rows (delivery records): 3924
+Unique Notifications: 1308
+Unique External Ref IDs: 1308
+Unique Candidates: 884
+Unique Delivery IDs: 3924
+Date Range: 2026-08-20 to 2026-09-24
+
+=== STATUS BREAKDOWN ===
+         Count  Percentage
+status                    
+SKIPPED   1839       46.87
+FAILED    1168       29.77
+SENT       917       23.37
+
+=== CHANNEL BREAKDOWN ===
+          Total Attempts  Percentage
+channel                             
+email               1308       33.33
+whatsapp            1308       33.33
+push                1302       33.18
+sms                    6        0.15
+
+=== CHANNEL x STATUS CROSS-TABULATION ===
+status    FAILED  SENT  SKIPPED   All
+channel                              
+email          0   724      584  1308
+push          63     0     1239  1302
+sms            6     0        0     6
+whatsapp    1099   193       16  1308
+All         1168   917     1839  3924
+
+Row Percentages:
+status    FAILED   SENT  SKIPPED
+channel                         
+email       0.00  55.35    44.65
+push        4.84   0.00    95.16
+sms       100.00   0.00     0.00
+whatsapp   84.02  14.76     1.22
+
+=== TRIGGER TYPE BREAKDOWN ===
+status                       FAILED  SENT  SKIPPED   All
+trigger_type                                            
+classroom_assigned                3     3        0     6
+enrollment_letter_generated      12     7       17    36
+id_card_generated                 4     4        4    12
+offer_letter_generated           45    53      118   216
+online_class_scheduled          522   130      848  1500
+onsite_class_scheduled          582   720      852  2154
+All                            1168   917     1839  3924
+
+=== REQUESTED CHANNELS COMBINATIONS ===
+requested_channels
+push,whatsapp,email        3888
+push,whatsapp,sms,email      24
+whatsapp,email               12
+
+=== ERROR MESSAGES (All Unique) ===
+error_message
+missing push tokens                                                                                1239
+Meta API 131008: (#131008) Required parameter is missing (no subcode)                              1090
+NaN                                                                                                 917
+missing email                                                                                       584
+All included players are not subscribed                                                              57
+Fallback satisfied by email                                                                          16
+No subscribed recipients                                                                              6
+Meta API 132018: (#132018) There���s an issue with the parameters in your template (no subcode)       6
+Meta API 132001: (#132001) Template name does not exist in the translation (no subcode)               3
+SMS template ID not configured for trigger: enrollment_letter_generated (pending DLT approval)        1
+SMS template ID not configured for trigger: onsite_class_scheduled (pending DLT approval)             1
+SMS template ID not configured for trigger: offer_letter_generated (pending DLT approval)             1
+SMS template ID not configured for trigger: id_card_generated (pending DLT approval)                  1
+SMS template ID not configured for trigger: online_class_scheduled (pending DLT approval)             1
+SMS template ID not configured for trigger: classroom_assigned (pending DLT approval)                 1
+
+=== ERROR CODES (All Unique) ===
+error_code
+NaN         2825
+131008.0    1090
+132018.0       6
+132001.0       3
+
+=== ERROR CODE x ERROR MESSAGE ===
+    error_code                                                                                    error_message   channel  count
+0     131008.0                            Meta API 131008: (#131008) Required parameter is missing (no subcode)  whatsapp   1090
+1     132001.0          Meta API 132001: (#132001) Template name does not exist in the translation (no subcode)  whatsapp      3
+2     132018.0  Meta API 132018: (#132018) There���s an issue with the parameters in your template (no subcode)  whatsapp      6
+3          NaN                                                          All included players are not subscribed      push     57
+4          NaN                                                                      Fallback satisfied by email  whatsapp     16
+5          NaN                                                                         No subscribed recipients      push      6
+6          NaN            SMS template ID not configured for trigger: classroom_assigned (pending DLT approval)       sms      1
+7          NaN   SMS template ID not configured for trigger: enrollment_letter_generated (pending DLT approval)       sms      1
+8          NaN             SMS template ID not configured for trigger: id_card_generated (pending DLT approval)       sms      1
+9          NaN        SMS template ID not configured for trigger: offer_letter_generated (pending DLT approval)       sms      1
+10         NaN        SMS template ID not configured for trigger: online_class_scheduled (pending DLT approval)       sms      1
+11         NaN        SMS template ID not configured for trigger: onsite_class_scheduled (pending DLT approval)       sms      1
+12         NaN                                                                                    missing email     email    584
+13         NaN                                                                              missing push tokens      push   1239
+14         NaN                                                                                              NaN     email    724
+15         NaN                                                                                              NaN  whatsapp    193
+
+=== DISPATCH TO SENT SECONDS (Latency Analysis) ===
+Valid Latency Counts: 917
+count    917.000000
+mean       2.966641
+std        4.606066
+min        0.740000
+25%        2.730000
+50%        2.910000
+75%        3.060000
+max       92.020000
+Median: 2.91
+P90: 3.25
+P95: 3.5819999999999994
+P99: 8.114400000000053
+
+Latency by Channel (dispatch_to_sent_seconds):
+          count      mean       std   min   25%   50%   75%    max
+channel                                                           
+email     724.0  3.474986  5.063592  2.61  2.86  2.98  3.11  92.02
+push        0.0       NaN       NaN   NaN   NaN   NaN   NaN    NaN
+sms         0.0       NaN       NaN   NaN   NaN   NaN   NaN    NaN
+whatsapp  193.0  1.059689  0.192199  0.74  0.91  1.02  1.19   1.68
+
+=== TEMPLATES PERFORMANCE ===
+status                        FAILED  SENT  SKIPPED   All
+template_name                                            
+lernern_classroom_assigned         3     3        0     6
+lernern_enrollment_letter          9     4       17    30
+lernern_enrollment_letter_v1       3     3        0     6
+lernern_id_card                    4     4        4    12
+lernern_offer_letter              45    53      118   216
+lernern_online_scheduled         522   130      848  1500
+lernern_onsite_scheduled         582   720      852  2154
+All                             1168   917     1839  3924
+
+=== CLIENT LOCATIONS ===
+status                                                                                          FAILED  SENT  SKIPPED   All
+client_location                                                                                                            
+Bengaluru Training Center                                                                            0     2        0     2
+E-5, MIDC AREA, AHMEDNAGAR, PUNE MAHARASHTRA - 414111, Maharashtra                                 303   276      321   900
+Kanadi Road, Naroli, Silvassa, Gujarat                                                              10   101      189   300
+Plant-4: Plot No.831-L, Industrial Model Township, Kharkhoda, Distt-Sonepat, Haryana., Haryana       3    35       67   105
+SP 812 A, INDUSTRIAL PHASE II, BHWADI, ALWAR, RAJASTHAN INDIA, Rajasthan                             2    50       26    78
+Survey No. 86/A, Kambalpalle vaillage, sadashivpet, sangareddy, Telangana - 508248, Telangana      261   255      249   765
+Test Client - Haryana                                                                                3     1        0     4
+Unknown / Virtual                                                                                  586   197      987  1770
+All                                                                                               1168   917     1839  3924
+
+=== TRAINER PERFORMANCE ===
+status                 FAILED  SENT  SKIPPED   All
+trainer_name                                      
+Anita Rao                   0     4        0     4
+Anuj Chowdhary              3    35       67   105
+Dr. Ajeet Gautam            6     2        0     8
+Harshvardhan Jadhav       607   349      838  1794
+Not Specified              64    67      139   270
+Ramavtar Sharma            12   151      215   378
+Sushil Kumar              106     5      189   300
+Yogesh Ranjan Mohanta     370   304      391  1065
+All                      1168   917     1839  3924
+
+=== TIME ANALYSIS (By Notification Date) ===
+status             FAILED  SENT  SKIPPED   All
+notification_date                             
+2026-08-20             18     6        0    24
+2026-09-12              0    32       37    69
+2026-09-15             15   186      282   483
+2026-09-16              0     9       18    27
+2026-09-17              0     1        2     3
+2026-09-19             23     1       45    69
+2026-09-21            510   264      720  1494
+2026-09-22            100    96       98   294
+2026-09-23            313   145      448   906
+2026-09-24            189   177      189   555
+All                  1168   917     1839  3924
+
+=== TIME ANALYSIS (By Day Name) ===
+status                 FAILED  SENT  SKIPPED   All
+notification_day_name                             
+Monday                    510   264      720  1494
+Saturday                   23    33       82   138
+Thursday                  207   184      191   582
+Tuesday                   115   282      380   777
+Wednesday                 313   154      466   933
+All                      1168   917     1839  3924
+
+=== TIME ANALYSIS (By Hour of Day) ===
+status             FAILED  SENT  SKIPPED   All
+notification_hour                             
+4                     301   151      442   894
+5                     201   177      219   597
+6                       1     2        6     9
+7                     208   150      251   609
+8                     189   180      192   561
+9                      22    31       46    99
+10                     15   106      194   315
+11                      5    40       75   120
+12                    109    56      216   381
+14                    104    14      182   300
+15                      2     2        2     6
+16                      3     3        3     9
+17                      8     5       11    24
+All                  1168   917     1839  3924
+
+=== MISSING/NULL VALUES PROFILE ===
+                           Missing Count  Missing %
+document_url                        3678      93.73
+session_date_raw                     270       6.88
+session_date                         270       6.88
+session_start_time                   270       6.88
+trainer_name                         270       6.88
+client_location                     1770      45.11
+provider_message_id                 3001      76.48
+error_code                          2825      71.99
+error_message                        917      23.37
+dispatched_at                       1839      46.87
+sent_at                             3007      76.63
+delivered_at                        3924     100.00
+dispatch_to_sent_seconds            3007      76.63
+sent_to_delivered_seconds           3924     100.00
+total_delivery_seconds              3924     100.00

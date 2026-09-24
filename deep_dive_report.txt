@@ -1,0 +1,69 @@
+=== DEEP DIVE: WHATSAPP BY TEMPLATE ===
+error_message                 Fallback satisfied by email  Meta API 131008: (#131008) Required parameter is missing (no subcode)  Meta API 132001: (#132001) Template name does not exist in the translation (no subcode)  Meta API 132018: (#132018) There���s an issue with the parameters in your template (no subcode)  SUCCESS (SENT)   All
+template_name                                                                                                                                                                                                                                                                                                                                   
+lernern_classroom_assigned                              0                                                                      0                                                                                        0                                                                                                1               1     2
+lernern_enrollment_letter                               0                                                                      9                                                                                        0                                                                                                0               1    10
+lernern_enrollment_letter_v1                            0                                                                      0                                                                                        0                                                                                                1               1     2
+lernern_id_card                                         0                                                                      1                                                                                        0                                                                                                1               2     4
+lernern_offer_letter                                    0                                                                     39                                                                                        3                                                                                                1              29    72
+lernern_online_scheduled                               12                                                                    486                                                                                        0                                                                                                1               1   500
+lernern_onsite_scheduled                                4                                                                    555                                                                                        0                                                                                                1             158   718
+All                                                    16                                                                   1090                                                                                        3                                                                                                6             193  1308
+
+=== DEEP DIVE: EMAIL BY TEMPLATE ===
+error_message                 SUCCESS (SENT)  missing email   All
+template_name                                                    
+lernern_classroom_assigned                 2              0     2
+lernern_enrollment_letter                  3              7    10
+lernern_enrollment_letter_v1               2              0     2
+lernern_id_card                            2              2     4
+lernern_offer_letter                      24             48    72
+lernern_online_scheduled                 129            371   500
+lernern_onsite_scheduled                 562            156   718
+All                                      724            584  1308
+
+=== DEEP DIVE: PUSH BY TEMPLATE ===
+error_message                 All included players are not subscribed  No subscribed recipients  missing push tokens   All
+template_name                                                                                                             
+lernern_classroom_assigned                                          0                         1                    0     1
+lernern_enrollment_letter                                           0                         0                   10    10
+lernern_enrollment_letter_v1                                        0                         1                    0     1
+lernern_id_card                                                     0                         1                    2     3
+lernern_offer_letter                                                0                         1                   70    71
+lernern_online_scheduled                                           33                         1                  465   499
+lernern_onsite_scheduled                                           24                         1                  692   717
+All                                                                57                         6                 1239  1302
+
+=== NOTIFICATION-LEVEL DELIVERY OUTCOMES ===
+Total Unique Notifications: 1308
+Notifications Reached (>=1 sent): 885 (67.66%)
+Notifications Dropped (0 sent): 423 (32.34%)
+
+=== NOTIFICATION REACHABILITY BY TRIGGER TYPE ===
+                             total  reached  dropped  reach_rate
+trigger                                                         
+classroom_assigned               2        2        0      100.00
+enrollment_letter_generated     12        6        6       50.00
+id_card_generated                4        3        1       75.00
+offer_letter_generated          72       51       21       70.83
+online_class_scheduled         500      129      371       25.80
+onsite_class_scheduled         718      694       24       96.66
+
+=== NOTIFICATION REACHABILITY BY DATE ===
+            total  reached  dropped  reach_rate
+date                                           
+2026-08-20      6        6        0      100.00
+2026-09-12     25       25        0      100.00
+2026-09-15    161      161        0      100.00
+2026-09-16      9        9        0      100.00
+2026-09-17      1        1        0      100.00
+2026-09-19     23        1       22        4.35
+2026-09-21    498      264      234       53.01
+2026-09-22     98       96        2       97.96
+2026-09-23    302      145      157       48.01
+2026-09-24    185      177        8       95.68
+
+=== CANDIDATE-LEVEL REACHABILITY ===
+Total Candidates: 884
+Candidates reached at least once: 525 (59.39%)
+Candidates NEVER reached: 359 (40.61%)
