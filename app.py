@@ -38,19 +38,21 @@ PALETTE = {
     "text_pill_blue": "#1e40af"
 }
 
+# ── Status: green=success, amber=warning/skipped, red=failure (consistent everywhere) ──
 STATUS_COLORS = {
-    "SENT": PALETTE["teal"],
-    "FAILED": PALETTE["coral"],
-    "SKIPPED": PALETTE["amber"],
-    "REACHED": PALETTE["teal"],
-    "UNREACHED": PALETTE["crimson"]
+    "SENT":      "#16a34a",   # green-600
+    "FAILED":    "#dc2626",   # red-600
+    "SKIPPED":   "#d97706",   # amber-600
+    "REACHED":   "#16a34a",   # green-600  (same as SENT)
+    "UNREACHED": "#dc2626",   # red-600    (same as FAILED)
 }
 
+# ── Channels: brand-aligned, distinct from each other and from status colors ──
 CHANNEL_COLORS = {
-    "email": PALETTE["ocean"],
-    "whatsapp": PALETTE["teal"],
-    "push": PALETTE["purple"],
-    "sms": PALETTE["coral"]
+    "email":     "#2563eb",   # blue-600     (classic email blue)
+    "whatsapp":  "#059669",   # emerald-600  (WhatsApp brand green)
+    "push":      "#7c3aed",   # violet-600   (push / app icon purple)
+    "sms":       "#ea580c",   # orange-600   (SMS / telecoms orange)
 }
 
 st.markdown(f"""
@@ -457,7 +459,7 @@ def render_funnel_and_leakage():
 
         fig_donut2 = go.Figure(go.Pie(
             labels=reach_labels, values=reach_vals, hole=0.62,
-            marker=dict(colors=[PALETTE['teal'], PALETTE['crimson']], line=dict(color='white', width=2)),
+            marker=dict(colors=[STATUS_COLORS['REACHED'], STATUS_COLORS['UNREACHED']], line=dict(color='white', width=2)),
             textinfo='label+percent', textfont=dict(size=11.5, family='Inter'),
             hovertemplate="<b>%{label}</b><br>%{value:,} candidates<br>%{percent}<extra></extra>"
         ))
@@ -539,23 +541,23 @@ def render_channels_and_providers():
 
     ce1, ce2, ce3, ce4 = st.columns(4)
     with ce1:
-        st.markdown(f"""<div class="exec-card" style="border-left:4px solid {PALETTE['ocean']};">
-            <div style="font-weight:700;color:{PALETTE['ocean']};font-size:14px;">EMAIL (1,308 Legs)</div>
+        st.markdown(f"""<div class="exec-card" style="border-left:4px solid {CHANNEL_COLORS['email']};">
+            <div style="font-weight:700;color:{CHANNEL_COLORS['email']};font-size:14px;">EMAIL (1,308 Legs)</div>
             <div style="font-size:22px;font-weight:800;color:{PALETTE['navy']};margin:6px 0;">55.4% Sent</div>
             <div style="font-size:12px;color:{PALETTE['muted']};">0% Failures · 44.6% Skipped — missing email in WMS</div></div>""", unsafe_allow_html=True)
     with ce2:
-        st.markdown(f"""<div class="exec-card" style="border-left:4px solid {PALETTE['coral']};">
-            <div style="font-weight:700;color:{PALETTE['coral']};font-size:14px;">WHATSAPP (1,308 Legs)</div>
+        st.markdown(f"""<div class="exec-card" style="border-left:4px solid {CHANNEL_COLORS['whatsapp']};">
+            <div style="font-weight:700;color:{CHANNEL_COLORS['whatsapp']};font-size:14px;">WHATSAPP (1,308 Legs)</div>
             <div style="font-size:22px;font-weight:800;color:{PALETTE['navy']};margin:6px 0;">14.8% Sent</div>
             <div style="font-size:12px;color:{PALETTE['muted']};">84.0% Failed — Meta API 131008 payload error</div></div>""", unsafe_allow_html=True)
     with ce3:
-        st.markdown(f"""<div class="exec-card" style="border-left:4px solid {PALETTE['purple']};">
-            <div style="font-weight:700;color:{PALETTE['purple']};font-size:14px;">MOBILE PUSH (1,302 Legs)</div>
+        st.markdown(f"""<div class="exec-card" style="border-left:4px solid {CHANNEL_COLORS['push']};">
+            <div style="font-weight:700;color:{CHANNEL_COLORS['push']};font-size:14px;">MOBILE PUSH (1,302 Legs)</div>
             <div style="font-size:22px;font-weight:800;color:{PALETTE['navy']};margin:6px 0;">0.0% Sent</div>
             <div style="font-size:12px;color:{PALETTE['muted']};">95.2% Skipped — missing push tokens (FCM sync)</div></div>""", unsafe_allow_html=True)
     with ce4:
-        st.markdown(f"""<div class="exec-card" style="border-left:4px solid {PALETTE['crimson']};">
-            <div style="font-weight:700;color:{PALETTE['crimson']};font-size:14px;">SMS (6 Legs)</div>
+        st.markdown(f"""<div class="exec-card" style="border-left:4px solid {CHANNEL_COLORS['sms']};">
+            <div style="font-weight:700;color:{CHANNEL_COLORS['sms']};font-size:14px;">SMS (6 Legs)</div>
             <div style="font-size:22px;font-weight:800;color:{PALETTE['navy']};margin:6px 0;">0.0% Sent</div>
             <div style="font-size:12px;color:{PALETTE['muted']};">100% Failed — India TRAI DLT approval pending</div></div>""", unsafe_allow_html=True)
 
@@ -582,7 +584,7 @@ def render_triggers_and_templates():
             action="Mandate email capture in online class onboarding to break the 100% communication blackout for online candidates."
         )
 
-        bar_colors_trig = [PALETTE['teal'] if r > 70 else (PALETTE['amber'] if r > 40 else PALETTE['coral']) for r in trig_reach['reach_rate']]
+        bar_colors_trig = [STATUS_COLORS['SENT'] if r > 70 else (STATUS_COLORS['SKIPPED'] if r > 40 else STATUS_COLORS['FAILED']) for r in trig_reach['reach_rate']]
 
         fig_reach = go.Figure(go.Bar(
             x=[t.replace('_',' ').title() for t in trig_reach['trigger_type']],
@@ -600,8 +602,8 @@ def render_triggers_and_templates():
             yaxis=dict(title="Reachability Rate (%)", showgrid=True, gridcolor='#f1f5f9', range=[0, 122]),
             bargap=0.35
         )
-        fig_reach.add_hline(y=70, line_dash="dot", line_color=PALETTE['teal'],  annotation_text="70% Target",  annotation_position="right")
-        fig_reach.add_hline(y=40, line_dash="dot", line_color=PALETTE['amber'], annotation_text="40% Warning", annotation_position="right")
+        fig_reach.add_hline(y=70, line_dash="dot", line_color=STATUS_COLORS['SENT'],    annotation_text="70% Target",  annotation_position="right", annotation_font_color=STATUS_COLORS['SENT'])
+        fig_reach.add_hline(y=40, line_dash="dot", line_color=STATUS_COLORS['SKIPPED'], annotation_text="40% Warning", annotation_position="right", annotation_font_color=STATUS_COLORS['SKIPPED'])
         st.plotly_chart(apply_exec_chart_theme(fig_reach, height=420, show_legend=False, pad_l=50, pad_r=65, pad_t=60, pad_b=50))
         st.markdown('</div>', unsafe_allow_html=True)
 
