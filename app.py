@@ -807,15 +807,7 @@ def render_time_series():
     else:
         import datetime as dt_mod
 
-        # ── Aggregate by date only (flat / single-row) ──
-        day_agg = (
-            month_df.groupby('notification_day')
-            .agg(volume=('delivery_id', 'count'), sent=('sent_flag', 'sum'))
-            .reset_index()
-            .sort_values('notification_day')
-        )
-
-        # Build X-axis labels: "15, Mon" — date number + comma + 3-letter weekday
+        # ── X-axis: date labels "15, Mon" ──
         def make_date_label(day_num):
             try:
                 d = dt_mod.date(int(sel_year), int(sel_month_num), int(day_num))
@@ -823,68 +815,84 @@ def render_time_series():
             except Exception:
                 return str(int(day_num))
 
-        x_labels   = [make_date_label(d) for d in day_agg['notification_day']]
-        z_values   = [[int(v) for v in day_agg['volume']]]    # single row
-        cell_text  = [[str(int(v)) if v > 0 else "" for v in day_agg['volume']]]
+        # ── Y-axis: hour labels "12 AM", "1 AM" … "11 PM" ──
+        def fmt_hr(h):
+            if h == 0:  return "12 AM"
+            if h < 12:  return f"{h} AM"
+            if h == 12: return "12 PM"
+            return f"{h-12} PM"
 
-        # Full date strings for hover
-        hover_dates = []
-        for d_num in day_agg['notification_day']:
-            try:
-                hover_dates.append(
-                    dt_mod.date(int(sel_year), int(sel_month_num), int(d_num))
-                    .strftime('%d %b %Y, %A')
-                )
-            except Exception:
-                hover_dates.append(str(int(d_num)))
+        # ── Pivot: rows = hour (0-23), cols = day-of-month ──
+        month_pivot = month_df.pivot_table(
+            index='notification_hour',
+            columns='notification_day',
+            values='delivery_id',
+            aggfunc='count',
+            fill_value=0
+        )
+        # Ensure all 24 hours are present, sorted 0→23
+        all_hours = list(range(24))
+        month_pivot = month_pivot.reindex(all_hours, fill_value=0)
+        # Sort columns (day numbers) ascending
+        month_pivot = month_pivot.reindex(sorted(month_pivot.columns), axis=1)
+
+        # X / Y labels
+        x_labels  = [make_date_label(d) for d in month_pivot.columns]
+        y_labels  = [fmt_hr(h) for h in month_pivot.index]   # 24 hour labels
+
+        # Cell text: show count, blank for zero
+        cell_text = [[str(int(v)) if v > 0 else "" for v in row]
+                     for row in month_pivot.values]
 
         fig_month_heat = go.Figure(go.Heatmap(
-            z=z_values,
+            z=month_pivot.values,
             x=x_labels,
-            y=["Notifications"],          # single invisible row label
+            y=y_labels,
             colorscale=HEAT_COLORSCALE,
             colorbar=dict(title="Volume", thickness=14, outlinewidth=0,
                           tickfont=dict(size=11, family='Inter')),
             text=cell_text,
             texttemplate="%{text}",
-            textfont=dict(size=13, color="#ffffff", family='Inter', weight=700),
+            textfont=dict(size=10, color="#ffffff", family='Inter'),
             hoverongaps=False,
-            customdata=[[f"{hd} — {int(v):,} attempts" for hd, v in zip(hover_dates, day_agg['volume'])]],
-            hovertemplate="<b>%{customdata}</b><extra></extra>",
-            xgap=4, ygap=0
+            hovertemplate="<b>%{x}  ·  %{y}</b><br>Notifications: %{z:,}<extra></extra>",
+            xgap=2, ygap=2
         ))
         fig_month_heat.update_layout(
             xaxis=dict(
                 title=f"{sel_month_label} {sel_year}  —  date, weekday",
                 showgrid=False,
-                tickfont=dict(size=12, family='Inter', color=PALETTE['charcoal']),
-                tickangle=0,
+                tickfont=dict(size=11.5, family='Inter', color=PALETTE['charcoal']),
+                tickangle=-30,
                 side='bottom'
             ),
             yaxis=dict(
-                showticklabels=False,   # hide the single "Notifications" label
+                title="Hour of Day",
+                autorange="reversed",        # 12 AM on top → 11 PM at bottom
                 showgrid=False,
-                fixedrange=True
+                tickfont=dict(size=11.5, family='Inter', color=PALETTE['charcoal'])
             )
         )
 
-        # Peak day helper using the already-computed day_agg
-        peak_row       = day_agg.loc[day_agg['volume'].idxmax()]
-        peak_day_lbl   = make_date_label(peak_row['notification_day'])
-        peak_day_vol   = int(peak_row['volume'])
-        total_month_vol= int(day_agg['volume'].sum())
-        sent_month     = int(day_agg['sent'].sum())
-        sent_pct       = round(sent_month / total_month_vol * 100, 1) if total_month_vol > 0 else 0
+        # ── Stats: aggregate by day for the strip metrics ──
+        day_agg      = month_df.groupby('notification_day').agg(
+                           volume=('delivery_id','count'), sent=('sent_flag','sum')
+                       ).reset_index()
+        peak_row     = day_agg.loc[day_agg['volume'].idxmax()]
+        peak_day_lbl = make_date_label(peak_row['notification_day'])
+        peak_day_vol = int(peak_row['volume'])
+        total_month_vol = int(day_agg['volume'].sum())
+        sent_month      = int(day_agg['sent'].sum())
+        sent_pct        = round(sent_month / total_month_vol * 100, 1) if total_month_vol > 0 else 0
 
-        # Mini stat strip — shown ABOVE chart for context
+        # Mini stat strip
         ms1, ms2, ms3, ms4 = st.columns(4)
         ms1.metric("Total Attempts",    f"{total_month_vol:,}")
-
         ms2.metric("Successfully Sent", f"{sent_month:,}",   f"{sent_pct}% sent rate")
         ms3.metric("Peak Day",           peak_day_lbl,         f"{peak_day_vol:,} attempts")
         ms4.metric("Active Days",        f"{month_df['notification_day'].nunique()} days")
 
-        st.plotly_chart(apply_exec_chart_theme(fig_month_heat, height=220, show_legend=False, pad_l=30, pad_r=50, pad_t=15, pad_b=55))
+        st.plotly_chart(apply_exec_chart_theme(fig_month_heat, height=480, show_legend=False, pad_l=65, pad_r=40, pad_t=20, pad_b=55))
 
     st.markdown('</div>', unsafe_allow_html=True)
 
