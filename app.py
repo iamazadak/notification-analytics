@@ -241,18 +241,18 @@ def render_chart_header(title, significance, calculation, action):
 # ==============================================================================
 st.markdown(f"""
 <div class="exec-header">
-    <div class="exec-title"><span>📈</span> Notification Engine Analytics — Executive Dashboard</div>
-    <div class="exec-subtitle">C-Suite &amp; Operations Briefing: Communication Reachability, Channel Economics &amp; Multi-Channel Recovery Pathways</div>
+    <div class="exec-title"><span>📈</span> Notification Engine Analytics — Operations Dashboard</div>
+    <div class="exec-subtitle">A summary of how well the system is reaching candidates across all communication channels — with clear actions to fix what is broken.</div>
     <div class="status-pill-container">
-        <span class="status-pill pill-red">🚨 System Health: High Operational Risk (32.3% Candidate Drop-off)</span>
-        <span class="status-pill pill-green">✅ Gateway Velocity: 2.91s Median (SLA Pass &lt; 5.0s)</span>
-        <span class="status-pill pill-blue">💡 High-Leverage Fix: 1 Meta API Patch Unlocks 100% Reachability</span>
+        <span class="status-pill pill-red">🚨 Alert: 1 in 3 candidates received no message at all</span>
+        <span class="status-pill pill-green">✅ Speed: Messages are sending in under 3 seconds on average</span>
+        <span class="status-pill pill-blue">💡 Quick Win: One WhatsApp fix can recover 1,090 failed deliveries today</span>
     </div>
 </div>
 """, unsafe_allow_html=True)
 
 dashboard_mode = st.radio("Navigation Mode",
-    ["📄 Executive Comprehensive Report (All Sections)", "📑 Interactive Analytic Deep-Dive Tabs"],
+    ["📄 Full Report (All Sections)", "📑 Section Tabs (Quick Browse)"],
     horizontal=True, label_visibility="collapsed")
 
 
@@ -276,39 +276,38 @@ def render_executive_kpis():
     c1, c2, c3, c4, c5 = st.columns(5)
     with c1:
         st.markdown(f"""<div class="exec-card accent-navy">
-            <div><div class="exec-card-label">Total Notifications</div>
+            <div><div class="exec-card-label">Total Notifications Sent</div>
             <div class="exec-card-value">{total_notifs:,}</div></div>
-            <div class="exec-card-subtext">Unique WMS-triggered requests</div></div>""", unsafe_allow_html=True)
+            <div class="exec-card-subtext">Unique candidate alerts triggered by the system</div></div>""", unsafe_allow_html=True)
     with c2:
         st.markdown(f"""<div class="exec-card accent-sky">
-            <div><div class="exec-card-label">Delivery Attempts</div>
+            <div><div class="exec-card-label">Total Delivery Attempts</div>
             <div class="exec-card-value">{total_legs:,}</div></div>
-            <div class="exec-card-subtext">{total_legs/total_notifs:.1f} channel legs / request</div></div>""", unsafe_allow_html=True)
+            <div class="exec-card-subtext">{total_legs/total_notifs:.1f} channels tried per notification</div></div>""", unsafe_allow_html=True)
     with c3:
         st.markdown(f"""<div class="exec-card accent-teal">
-            <div><div class="exec-card-label">Candidate Reach Rate</div>
+            <div><div class="exec-card-label">Candidates Reached</div>
             <div class="exec-card-value">{reach_rate:.1f}%</div></div>
-            <div class="exec-card-subtext">{reached_notifs:,} reached on ≥1 channel</div></div>""", unsafe_allow_html=True)
+            <div class="exec-card-subtext">{reached_notifs:,} people got the message on at least one channel</div></div>""", unsafe_allow_html=True)
     with c4:
         st.markdown(f"""<div class="exec-card accent-purple">
-            <div><div class="exec-card-label">Channel Sent Rate</div>
+            <div><div class="exec-card-label">Successful Delivery Rate</div>
             <div class="exec-card-value">{channel_rate:.1f}%</div></div>
-            <div class="exec-card-subtext">{sent_legs_cnt:,} of {total_legs:,} legs delivered</div></div>""", unsafe_allow_html=True)
+            <div class="exec-card-subtext">{sent_legs_cnt:,} of {total_legs:,} attempts actually delivered</div></div>""", unsafe_allow_html=True)
     with c5:
         st.markdown(f"""<div class="exec-card accent-coral">
-            <div><div class="exec-card-label">Complete Blackout Rate</div>
+            <div><div class="exec-card-label">Completely Missed</div>
             <div class="exec-card-value">{dropped_rate:.1f}%</div></div>
-            <div class="exec-card-subtext">{dropped_cnt:,} candidates — zero channel success</div></div>""", unsafe_allow_html=True)
+            <div class="exec-card-subtext">{dropped_cnt:,} candidates — no message reached them on any channel</div></div>""", unsafe_allow_html=True)
 
     st.markdown(f"""<div class="exec-takeaway-box">
-        <strong>📋 Executive Bottom-Line:</strong><br>
-        The engine attempts 3.0 delivery legs per notification (Push + WhatsApp + Email), yet
-        <strong>{dropped_cnt:,} candidates ({dropped_rate:.1f}%) were never reached on ANY channel</strong>.
-        Caused by <strong>3 preventable software bottlenecks</strong>:
-        (1) WhatsApp Meta API 131008 parameter omission (1,090 failures),
-        (2) Mobile Push token sync gap (1,239 skips), and
-        (3) Missing upstream email capture in WMS (584 skips).
-        Resolving WhatsApp's parameter payload alone guarantees <strong>immediate recovery for all 1,090 failed attempts</strong>.
+        <strong>📋 Summary — What This Means:</strong>
+        <ul style="margin:10px 0 0 0; padding-left:18px; line-height:1.8;">
+            <li>The system tries up to <strong>3 channels per candidate</strong> (Push, WhatsApp, Email), but <strong>{dropped_cnt:,} people ({dropped_rate:.1f}%) received nothing at all.</strong></li>
+            <li><strong>WhatsApp error (code 131008):</strong> A missing field in the message data caused 1,090 deliveries to fail. One backend fix resolves all of them.</li>
+            <li><strong>Mobile Push not working:</strong> 1,239 attempts were skipped because the app never saved the device token when candidates logged in.</li>
+            <li><strong>No email address on file:</strong> 584 online candidates were registered without an email, leaving them with no backup contact method.</li>
+        </ul>
     </div>""", unsafe_allow_html=True)
 
 
@@ -316,15 +315,15 @@ def render_executive_kpis():
 def render_what_if_simulator():
     st.markdown(f"""<div class="exec-simulator-container">
         <h4 style="margin:0px 0px 6px 0px;color:{PALETTE['navy']};font-weight:700;font-size:16px;">
-            🎛️ Interactive Decision Simulator — Remediation ROI</h4>
+            🎛️ What-If Simulator — See the Impact of Each Fix</h4>
         <p style="font-size:12.5px;color:{PALETTE['muted']};margin:0px 0px 14px 0px;">
-            Toggle technical fixes to project operational reachability impact in real time:</p>""",
+            Tick one or more fixes below to see how many more candidates would be reached if that problem were solved today:</p>""",
         unsafe_allow_html=True)
 
     sc1, sc2, sc3 = st.columns(3)
-    with sc1: fix_wa    = st.checkbox("Fix WhatsApp Meta 131008 Bug",   value=True,  help="Hotfix payload parameter mappings for 1,090 WhatsApp messages")
-    with sc2: fix_push  = st.checkbox("Sync Mobile Push Device Tokens", value=False, help="Connect FCM token registration for 1,239 push attempts")
-    with sc3: fix_email = st.checkbox("Enforce Mandatory WMS Email",    value=False, help="Capture missing email addresses for 584 candidates")
+    with sc1: fix_wa    = st.checkbox("Fix WhatsApp Error (Code 131008)",    value=True,  help="Correct the missing field in WhatsApp messages — recovers 1,090 failed deliveries immediately")
+    with sc2: fix_push  = st.checkbox("Save Mobile Push Device Tokens",      value=False, help="Store the device ID when candidates log into the app — unlocks 1,239 push notifications")
+    with sc3: fix_email = st.checkbox("Make Email Mandatory at Registration", value=False, help="Require email at online sign-up — gives 584 candidates a backup contact channel")
 
     sim_df = filtered_df.copy()
     if fix_wa:
@@ -345,17 +344,17 @@ def render_what_if_simulator():
     recovered   = sim_reached - base_reached
 
     r1, r2, r3, r4 = st.columns(4)
-    with r1: st.metric("Baseline Reachability",   f"{base_rate:.1f}%")
-    with r2: st.metric("Projected Reachability",  f"{sim_rate:.1f}%",    f"+{delta_rate:.1f}%")
-    with r3: st.metric("Unreached After Fix",      f"{sim_dropped:,}",   f"-{(total_n-base_reached)-sim_dropped:,}", delta_color="inverse")
-    with r4: st.metric("Candidates Recovered",     f"{recovered:,}")
+    with r1: st.metric("Current Reach Rate",     f"{base_rate:.1f}%")
+    with r2: st.metric("Reach Rate After Fixes", f"{sim_rate:.1f}%",    f"+{delta_rate:.1f}%")
+    with r3: st.metric("Still Unreached",         f"{sim_dropped:,}",   f"-{(total_n-base_reached)-sim_dropped:,}", delta_color="inverse")
+    with r4: st.metric("Extra Candidates Reached",f"{recovered:,}")
 
     st.markdown("</div>", unsafe_allow_html=True)
 
 
 # ── 3. Funnel & Leakage ──────────────────────────────────────────────────────
 def render_funnel_and_leakage():
-    st.markdown('<div class="section-title">2. Delivery Funnel &amp; Root-Cause Leakage</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">2. Where Are Messages Being Lost?</div>', unsafe_allow_html=True)
 
     total_n        = len(filtered_notif_df)
     total_l        = len(filtered_df)
@@ -366,20 +365,20 @@ def render_funnel_and_leakage():
     # Full-width funnel
     st.markdown('<div class="plot-card">', unsafe_allow_html=True)
     render_chart_header(
-        title="📌 End-to-End Pipeline Conversion Funnel",
-        significance="Measures communication attrition across 5 stages from WMS trigger to candidate receipt, pinpointing where the maximum volume is lost.",
-        calculation="Stage volumes: Notifications=COUNT(notification_id), Dispatched=COUNT(dispatched_at IS NOT NULL), Sent=SUM(sent_flag=1), Reached=COUNT(notification_id WHERE sent_legs>=1), Receipts=webhook confirmed count.",
-        action="Integrate carrier webhook receipt endpoints to close the Stage 5 gap and enable true end-to-end visibility."
+        title="📌 End-to-End Message Delivery Journey",
+        significance="Shows how many notifications make it through each stage — from the moment one is created to the point a candidate actually receives it. The further the drop, the bigger the problem.",
+        calculation="Stage 1: total notifications created · Stage 2: sent to the delivery provider · Stage 3: accepted and dispatched · Stage 4: at least one channel reached the candidate · Stage 5: confirmed read (not yet tracked).",
+        action="Set up delivery receipt tracking (webhooks) with your messaging providers to close the visibility gap at Stage 5."
     )
 
-    stages  = ["1. Notification Requests", "2. Dispatched to Gateway", "3. Gateway Accepted (Sent)", "4. Candidate Reached (>=1 Ch)", "5. Confirmed Receipts"]
+    stages  = ["1. Notifications Created", "2. Handed to Delivery Provider", "3. Successfully Sent", "4. Candidate Received (≥1 Channel)", "5. Confirmed Read"]
     values  = [total_n, dispatched_cnt, sent_cnt, reached_cnt, 0]
     percents= [
-        "100.0% — Baseline",
-        f"{dispatched_cnt/total_l*100:.1f}% of legs dispatched",
-        f"{sent_cnt/total_l*100:.1f}% of legs — gateway success",
-        f"{reached_cnt/total_n*100:.1f}% candidate reachability",
-        "0.0% — Webhook gap (untracked)"
+        "100% — starting point",
+        f"{dispatched_cnt/total_l*100:.1f}% of all attempts handed over",
+        f"{sent_cnt/total_l*100:.1f}% successfully delivered",
+        f"{reached_cnt/total_n*100:.1f}% of candidates received a message",
+        "0% — read receipts not yet tracked"
     ]
     bar_colors = [PALETTE['navy'], PALETTE['ocean'], PALETTE['teal'], PALETTE['sage'], PALETTE['muted']]
 
@@ -406,10 +405,10 @@ def render_funnel_and_leakage():
     with col_f1:
         st.markdown('<div class="plot-card">', unsafe_allow_html=True)
         render_chart_header(
-            title="⚠️ Drop-off Root Causes — Leakage Breakdown",
-            significance="Categorizes all failed & skipped delivery attempts into distinct root-cause buckets: API bugs, SDK gaps, and missing upstream data.",
-            calculation="Filter status IN ('FAILED','SKIPPED'), group by error_message, compute Count and Share% = (Count / Total Leakage) x 100. Sorted descending.",
-            action="Hotfix WhatsApp Meta API 131008 payload to instantly eliminate 36%+ of all engine leakage in one engineering sprint."
+            title="⚠️ Why Did Messages Fail? — Drop-off Reasons",
+            significance="Shows the most common reasons why messages were not delivered. Each bar is a distinct failure category, making it easy to see which problem is causing the most damage.",
+            calculation="All failed and skipped attempts are grouped by their error reason. Each group is counted and shown as a percentage of total failures. Sorted from largest to smallest.",
+            action="Fix the WhatsApp message data error (top bar) first — it alone accounts for over a third of all failures and can be resolved in a single day."
         )
 
         leak_df     = filtered_df[filtered_df['status'].isin(['FAILED','SKIPPED'])].copy()
@@ -439,7 +438,7 @@ def render_funnel_and_leakage():
         ))
         fig_leak.update_layout(
             yaxis=dict(autorange="reversed", showgrid=False, tickfont=dict(size=11.5)),
-            xaxis=dict(title="Leakage Count", showgrid=True, gridcolor='#f1f5f9', range=[0, top_leaks['Count'].max() * 1.4]),
+            xaxis=dict(title="Number of Failed / Skipped Attempts", showgrid=True, gridcolor='#f1f5f9', range=[0, top_leaks['Count'].max() * 1.4]),
             bargap=0.28
         )
         st.plotly_chart(apply_exec_chart_theme(fig_leak, height=360, show_legend=False, pad_l=55, pad_r=50, pad_t=30, pad_b=45))
@@ -448,14 +447,14 @@ def render_funnel_and_leakage():
     with col_f2:
         st.markdown('<div class="plot-card">', unsafe_allow_html=True)
         render_chart_header(
-            title="🎯 Candidate Reachability Split",
-            significance="Shows the binary outcome at candidate level — whether >=1 channel successfully delivered vs. complete blackout.",
-            calculation="For each notification_id, is_reached = 1 if SUM(sent_flag) > 0. Donut: REACHED vs UNREACHED count.",
-            action="Target the 32.3% unreached segment through the remediation roadmap in Section 7."
+            title="🎯 How Many Candidates Were Reached?",
+            significance="Shows the simple split between candidates who received at least one message, and those who received nothing at all.",
+            calculation="Each notification is checked: if at least one channel (Email, WhatsApp, or Push) delivered successfully, the candidate is marked as Reached. Otherwise, they are marked as Missed.",
+            action="The 32% missed segment is the primary target — see Section 7 for the step-by-step fix plan."
         )
 
         reach_vals = [int(filtered_notif_df['is_reached'].sum()), int((~filtered_notif_df['is_reached']).sum())]
-        reach_labels = ['Reached (>=1 Ch)', 'Unreached (Blackout)']
+        reach_labels = ['Reached (at least 1 channel)', 'Not Reached (all channels failed)']
 
         fig_donut2 = go.Figure(go.Pie(
             labels=reach_labels, values=reach_vals, hole=0.62,
@@ -472,7 +471,7 @@ def render_funnel_and_leakage():
 
 # ── 4. Channel & Provider Matrix ─────────────────────────────────────────────
 def render_channels_and_providers():
-    st.markdown('<div class="section-title">3. Channel &amp; Provider Performance</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">3. Channel Performance — Email, WhatsApp, Push &amp; SMS</div>', unsafe_allow_html=True)
 
     ct_ch = pd.crosstab(filtered_df['channel'], filtered_df['status']).fillna(0)
     for col in ['SENT','FAILED','SKIPPED']:
@@ -483,10 +482,10 @@ def render_channels_and_providers():
     with col_c1:
         st.markdown('<div class="plot-card">', unsafe_allow_html=True)
         render_chart_header(
-            title="📊 Channel Delivery Split — Sent vs. Skipped vs. Failed",
-            significance="Compares delivery success & failure profiles across channels to isolate channel-specific integration failures vs. data gaps.",
-            calculation="Cross-tabulation of channel x status. Stacked vertical bars with per-segment count labels inside and total channel volume annotated on top.",
-            action="Patch WhatsApp dispatcher payload immediately — 1,090 failed attempts can be recovered in a single backend deploy."
+            title="📊 Delivery Outcome by Channel — Sent, Skipped, Failed",
+            significance="Shows how each channel is performing. This makes it immediately clear which channel is working well and which has a specific problem that needs fixing.",
+            calculation="Counts of Sent, Failed, and Skipped attempts are stacked per channel. The total at the top of each bar shows overall volume for that channel.",
+            action="WhatsApp has the most failures — fixing the message data error will recover 1,090 deliveries without touching any other channel."
         )
 
         ch_totals = ct_ch[['SENT','FAILED','SKIPPED']].sum(axis=1)
@@ -517,10 +516,10 @@ def render_channels_and_providers():
     with col_c2:
         st.markdown('<div class="plot-card">', unsafe_allow_html=True)
         render_chart_header(
-            title="🍩 Channel Volume Share",
-            significance="Shows how communication redundancy is distributed across Email, WhatsApp, Push, and SMS channels.",
-            calculation="SUM(delivery attempts) grouped by channel. Donut chart (hole=0.65) with total volume in center.",
-            action="Audit why SMS accounts for only 0.15% of requests despite being the designated offline fallback channel."
+            title="🍩 How Is Volume Split Across Channels?",
+            significance="Shows which channels carry the most traffic. An even split means good redundancy — if one channel fails, others can pick up the load.",
+            calculation="Total delivery attempts counted per channel and shown as a percentage of the overall total.",
+            action="SMS is barely being used (0.15% of volume) — investigate whether it can serve as a reliable backup when other channels fail."
         )
 
         ch_sums = ct_ch.sum(axis=1)
@@ -542,29 +541,29 @@ def render_channels_and_providers():
     ce1, ce2, ce3, ce4 = st.columns(4)
     with ce1:
         st.markdown(f"""<div class="exec-card" style="border-left:4px solid {CHANNEL_COLORS['email']};">
-            <div style="font-weight:700;color:{CHANNEL_COLORS['email']};font-size:14px;">EMAIL (1,308 Legs)</div>
-            <div style="font-size:22px;font-weight:800;color:{PALETTE['navy']};margin:6px 0;">55.4% Sent</div>
-            <div style="font-size:12px;color:{PALETTE['muted']};">0% Failures · 44.6% Skipped — missing email in WMS</div></div>""", unsafe_allow_html=True)
+            <div style="font-weight:700;color:{CHANNEL_COLORS['email']};font-size:14px;">📧 EMAIL — 1,308 Attempts</div>
+            <div style="font-size:22px;font-weight:800;color:{PALETTE['navy']};margin:6px 0;">55.4% Delivered</div>
+            <div style="font-size:12px;color:{PALETTE['muted']};line-height:1.6;">✅ No failures · ⏭️ 44.6% skipped<br>Reason: email address missing at registration</div></div>""", unsafe_allow_html=True)
     with ce2:
         st.markdown(f"""<div class="exec-card" style="border-left:4px solid {CHANNEL_COLORS['whatsapp']};">
-            <div style="font-weight:700;color:{CHANNEL_COLORS['whatsapp']};font-size:14px;">WHATSAPP (1,308 Legs)</div>
-            <div style="font-size:22px;font-weight:800;color:{PALETTE['navy']};margin:6px 0;">14.8% Sent</div>
-            <div style="font-size:12px;color:{PALETTE['muted']};">84.0% Failed — Meta API 131008 payload error</div></div>""", unsafe_allow_html=True)
+            <div style="font-weight:700;color:{CHANNEL_COLORS['whatsapp']};font-size:14px;">💬 WHATSAPP — 1,308 Attempts</div>
+            <div style="font-size:22px;font-weight:800;color:{PALETTE['navy']};margin:6px 0;">14.8% Delivered</div>
+            <div style="font-size:12px;color:{PALETTE['muted']};line-height:1.6;">❌ 84% failed · Error code 131008<br>Reason: missing field in the message template</div></div>""", unsafe_allow_html=True)
     with ce3:
         st.markdown(f"""<div class="exec-card" style="border-left:4px solid {CHANNEL_COLORS['push']};">
-            <div style="font-weight:700;color:{CHANNEL_COLORS['push']};font-size:14px;">MOBILE PUSH (1,302 Legs)</div>
-            <div style="font-size:22px;font-weight:800;color:{PALETTE['navy']};margin:6px 0;">0.0% Sent</div>
-            <div style="font-size:12px;color:{PALETTE['muted']};">95.2% Skipped — missing push tokens (FCM sync)</div></div>""", unsafe_allow_html=True)
+            <div style="font-weight:700;color:{CHANNEL_COLORS['push']};font-size:14px;">📱 MOBILE PUSH — 1,302 Attempts</div>
+            <div style="font-size:22px;font-weight:800;color:{PALETTE['navy']};margin:6px 0;">0.0% Delivered</div>
+            <div style="font-size:12px;color:{PALETTE['muted']};line-height:1.6;">⏭️ 95.2% skipped · No device token saved<br>Reason: app did not record device ID at login</div></div>""", unsafe_allow_html=True)
     with ce4:
         st.markdown(f"""<div class="exec-card" style="border-left:4px solid {CHANNEL_COLORS['sms']};">
-            <div style="font-weight:700;color:{CHANNEL_COLORS['sms']};font-size:14px;">SMS (6 Legs)</div>
-            <div style="font-size:22px;font-weight:800;color:{PALETTE['navy']};margin:6px 0;">0.0% Sent</div>
-            <div style="font-size:12px;color:{PALETTE['muted']};">100% Failed — India TRAI DLT approval pending</div></div>""", unsafe_allow_html=True)
+            <div style="font-weight:700;color:{CHANNEL_COLORS['sms']};font-size:14px;">📟 SMS — 6 Attempts</div>
+            <div style="font-size:22px;font-weight:800;color:{PALETTE['navy']};margin:6px 0;">0.0% Delivered</div>
+            <div style="font-size:12px;color:{PALETTE['muted']};line-height:1.6;">❌ 100% failed · Regulatory block<br>Reason: awaiting government SMS approval (India)</div></div>""", unsafe_allow_html=True)
 
 
 # ── 5. Triggers & Templates ───────────────────────────────────────────────────
 def render_triggers_and_templates():
-    st.markdown('<div class="section-title">4. Trigger Analytics — Onsite vs. Online Crisis</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">4. Onsite vs. Online — Where Is the Gap?</div>', unsafe_allow_html=True)
 
     trig_reach = filtered_notif_df.groupby('trigger_type').agg(
         total=('notification_id','count'), reached=('is_reached','sum')
@@ -578,10 +577,10 @@ def render_triggers_and_templates():
     with col_tr1:
         st.markdown('<div class="plot-card">', unsafe_allow_html=True)
         render_chart_header(
-            title="⚡ Candidate Reachability % by Business Trigger",
-            significance="Uncovers high-risk business workflows where candidate drop-offs are concentrated. Directly exposes the Onsite vs. Online reachability gap.",
-            calculation="Group by trigger_type. Reach Rate% = (COUNT notification_id WHERE sent_legs>0 / COUNT notification_id) x 100. Color tiers: Green >70%, Amber 40-70%, Red <40%.",
-            action="Mandate email capture in online class onboarding to break the 100% communication blackout for online candidates."
+            title="⚡ Delivery Success Rate by Class Type",
+            significance="Shows what percentage of candidates in each class type (onsite or online) actually received their notification. A low rate means a whole group of candidates is being missed.",
+            calculation="For each class type, the success rate = (number of candidates reached ÷ total candidates notified) × 100. Green bars are healthy (above 70%), amber bars need attention (40–70%), red bars are critical (below 40%).",
+            action="Online classes have a 25.8% reach rate — far below acceptable. Make email mandatory at online registration to give these candidates a reliable backup channel."
         )
 
         bar_colors_trig = [STATUS_COLORS['SENT'] if r > 70 else (STATUS_COLORS['SKIPPED'] if r > 40 else STATUS_COLORS['FAILED']) for r in trig_reach['reach_rate']]
@@ -611,20 +610,19 @@ def render_triggers_and_templates():
         st.markdown('<div class="plot-card">', unsafe_allow_html=True)
         st.markdown(f"""
         <div class="exec-alert-box" style="height:310px;display:flex;flex-direction:column;justify-content:space-around;">
-            <div><strong style="font-size:15px;color:{PALETTE['crimson']};">Onsite 96.7% vs. Online 25.8% — A 70-Point Gap</strong><br>
-            <span style="font-size:12px;color:{PALETTE['muted']};">Why is online onboarding silently dropping 3 in 4 candidates?</span></div>
-            <div style="font-size:12.8px;line-height:1.6;">
-                • <strong>Onsite Classes (718 notifications):</strong><br>
-                  694 reached — <strong>96.7% reachability</strong>.<br>
-                  Recruiters capture verified email at in-person sign-up.<br><br>
-                • <strong>Online Classes (500 notifications):</strong><br>
-                  Only 129 reached — <strong>25.8% reachability</strong> (371 dropped).<br>
-                  Candidates submit only mobile numbers at registration.<br><br>
-                • <em>The Trap:</em> When WhatsApp fails (Meta 131008) and Push lacks tokens,
-                  <strong>no email = guaranteed 100% blackout.</strong>
+            <div><strong style="font-size:15px;color:{PALETTE['crimson']};">Onsite: 96.7% reached &nbsp;|&nbsp; Online: 25.8% reached</strong><br>
+            <span style="font-size:12px;color:{PALETTE['muted']};">3 out of every 4 online candidates received no message at all.</span></div>
+            <div style="font-size:12.8px;line-height:1.75;">
+                <strong>🏢 Onsite Classes (718 notifications)</strong><br>
+                &nbsp;&nbsp;• 694 candidates reached — <strong>96.7% success rate</strong><br>
+                &nbsp;&nbsp;• Email collected at in-person sign-up — reliable fallback<br><br>
+                <strong>💻 Online Classes (500 notifications)</strong><br>
+                &nbsp;&nbsp;• Only 129 reached — <strong>25.8% success rate</strong> (371 missed)<br>
+                &nbsp;&nbsp;• Candidates register with only a phone number<br>
+                &nbsp;&nbsp;• When WhatsApp and Push both fail, there is no email to fall back on
             </div>
             <div style="font-size:12.5px;font-weight:700;color:{PALETTE['crimson']};">
-                Remediation: Make email mandatory in the online sign-up form.
+                ✏️ Fix: Add a mandatory email field to the online registration form.
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -633,7 +631,7 @@ def render_triggers_and_templates():
 
 # ── 6. Time-Series & Heatmap ──────────────────────────────────────────────────
 def render_time_series():
-    st.markdown('<div class="section-title">5. Time-Series Trends &amp; Temporal Heatmap</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">5. When Are Messages Being Sent? — Trends &amp; Patterns</div>', unsafe_allow_html=True)
 
     daily_df = filtered_df.groupby('notification_date').agg(
         total_attempts=('delivery_id','count'), sent_count=('sent_flag','sum'),
@@ -978,46 +976,46 @@ def render_demographics_and_segmentation():
 
 # ── 8. Action Plan & Triage ───────────────────────────────────────────────────
 def render_action_plan_and_triage():
-    st.markdown('<div class="section-title">7. Executive Remediation Roadmap &amp; Failure Triage</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">7. What to Fix — Action Plan &amp; Failure Lookup</div>', unsafe_allow_html=True)
 
     r1, r2, r3, r4 = st.columns(4)
     with r1:
         st.markdown(f"""<div class="exec-card" style="border-top:4px solid {PALETTE['crimson']};">
-            <div style="font-weight:800;font-size:13px;color:{PALETTE['crimson']};">PRIORITY 0 (P0) · HOTFIX</div>
-            <div style="font-weight:700;color:{PALETTE['navy']};margin:6px 0;font-size:14px;">WhatsApp Meta API 131008</div>
-            <div style="font-size:12px;color:{PALETTE['muted']};margin-bottom:8px;">1,090 failures — backend payload omits date/trainer template params.</div>
-            <div style="font-size:12px;font-weight:700;color:{PALETTE['teal']};">Effort: 1 day · Unlocks +1,090 delivered</div></div>""", unsafe_allow_html=True)
+            <div style="font-weight:800;font-size:13px;color:{PALETTE['crimson']};">🔴 PRIORITY 1 — Fix Today</div>
+            <div style="font-weight:700;color:{PALETTE['navy']};margin:6px 0;font-size:14px;">WhatsApp Message Error</div>
+            <div style="font-size:12px;color:{PALETTE['muted']};margin-bottom:8px;line-height:1.6;">1,090 messages failed because a required field (date / trainer name) was missing from the WhatsApp template.</div>
+            <div style="font-size:12px;font-weight:700;color:{STATUS_COLORS['SENT']};">⏱ 1 day to fix · Recovers 1,090 deliveries</div></div>""", unsafe_allow_html=True)
     with r2:
         st.markdown(f"""<div class="exec-card" style="border-top:4px solid {PALETTE['coral']};">
-            <div style="font-weight:800;font-size:13px;color:{PALETTE['coral']};">PRIORITY 1 (P1) · SDK</div>
-            <div style="font-weight:700;color:{PALETTE['navy']};margin:6px 0;font-size:14px;">Mobile Push Token Sync</div>
-            <div style="font-size:12px;color:{PALETTE['muted']};margin-bottom:8px;">1,239 skips — app login fails to sync FCM tokens to profile database.</div>
-            <div style="font-size:12px;font-weight:700;color:{PALETTE['teal']};">Effort: 3-5 days · Unlocks +1,239 delivered</div></div>""", unsafe_allow_html=True)
+            <div style="font-weight:800;font-size:13px;color:{PALETTE['coral']};">🟠 PRIORITY 2 — Fix This Week</div>
+            <div style="font-weight:700;color:{PALETTE['navy']};margin:6px 0;font-size:14px;">Mobile Push Not Saving Device ID</div>
+            <div style="font-size:12px;color:{PALETTE['muted']};margin-bottom:8px;line-height:1.6;">1,239 push attempts were skipped because the app did not record the device token when candidates logged in.</div>
+            <div style="font-size:12px;font-weight:700;color:{STATUS_COLORS['SENT']};">⏱ 3–5 days to fix · Recovers 1,239 deliveries</div></div>""", unsafe_allow_html=True)
     with r3:
         st.markdown(f"""<div class="exec-card" style="border-top:4px solid {PALETTE['amber']};">
-            <div style="font-weight:800;font-size:13px;color:{PALETTE['amber']};">PRIORITY 2 (P2) · DATA</div>
-            <div style="font-weight:700;color:{PALETTE['navy']};margin:6px 0;font-size:14px;">Mandatory Online Email</div>
-            <div style="font-size:12px;color:{PALETTE['muted']};margin-bottom:8px;">371 online candidates dropped. Enforce email at online sign-up.</div>
-            <div style="font-size:12px;font-weight:700;color:{PALETTE['teal']};">Effort: 2 days · Saves +584 candidates</div></div>""", unsafe_allow_html=True)
+            <div style="font-weight:800;font-size:13px;color:{PALETTE['amber']};">🟡 PRIORITY 3 — Fix This Sprint</div>
+            <div style="font-weight:700;color:{PALETTE['navy']};margin:6px 0;font-size:14px;">Collect Email at Online Registration</div>
+            <div style="font-size:12px;color:{PALETTE['muted']};margin-bottom:8px;line-height:1.6;">371 online candidates had no email on file — making them impossible to reach when WhatsApp and Push both failed.</div>
+            <div style="font-size:12px;font-weight:700;color:{STATUS_COLORS['SENT']};">⏱ 2 days to fix · Saves 584 candidates</div></div>""", unsafe_allow_html=True)
     with r4:
         st.markdown(f"""<div class="exec-card" style="border-top:4px solid {PALETTE['sky']};">
-            <div style="font-weight:800;font-size:13px;color:{PALETTE['sky']};">PRIORITY 3 (P3) · REGULATORY</div>
-            <div style="font-weight:700;color:{PALETTE['navy']};margin:6px 0;font-size:14px;">India TRAI DLT SMS</div>
-            <div style="font-size:12px;color:{PALETTE['muted']};margin-bottom:8px;">100% SMS failed — DLT approval pending. Whitelist fallback templates.</div>
-            <div style="font-size:12px;font-weight:700;color:{PALETTE['teal']};">Effort: 1 week · Activates SMS fallback</div></div>""", unsafe_allow_html=True)
+            <div style="font-weight:800;font-size:13px;color:{PALETTE['sky']};">🔵 PRIORITY 4 — Regulatory Track</div>
+            <div style="font-weight:700;color:{PALETTE['navy']};margin:6px 0;font-size:14px;">Activate SMS as Backup Channel</div>
+            <div style="font-size:12px;color:{PALETTE['muted']};margin-bottom:8px;line-height:1.6;">All 6 SMS attempts failed due to a pending government approval (India DLT). Once approved, SMS becomes a valuable offline fallback.</div>
+            <div style="font-size:12px;font-weight:700;color:{STATUS_COLORS['SENT']};">⏱ ~1 week · Activates full SMS fallback</div></div>""", unsafe_allow_html=True)
 
     st.markdown('<div class="plot-card" style="margin-top:24px;">', unsafe_allow_html=True)
     render_chart_header(
-        title="🔍 Operational Failure Triage Explorer",
-        significance="Enables engineers and ops teams to search, isolate, and debug individual candidate delivery events by name, ID, or reference.",
-        calculation="Dynamic string search across candidate_name, candidate_id, external_ref_id. Combined with status and error_message filters.",
-        action="Export filtered failure records as CSV for immediate engineering ticketing and root-cause triage."
+        title="🔍 Failure Lookup — Search Any Candidate or Delivery",
+        significance="Use this to investigate a specific candidate, look up why their message failed, or export a filtered list for the engineering team to act on.",
+        calculation="Search by candidate name, ID, or booking reference. Filter by delivery status or failure reason. All results can be downloaded as a CSV file.",
+        action="Export the filtered FAILED records and share with the engineering team as a ready-made ticket with the exact error reasons attached."
     )
 
     col_s1, col_s2, col_s3 = st.columns([1.5, 1, 1])
-    with col_s1: search_q = st.text_input("Search Candidate Name / ID / External Ref", "")
-    with col_s2: status_f = st.selectbox("Status Filter", ["All","FAILED","SKIPPED","SENT"])
-    with col_s3: error_f  = st.selectbox("Error Reason Filter", ["All"] + list(filtered_df['error_message'].unique()))
+    with col_s1: search_q = st.text_input("Search by Candidate Name, ID, or Booking Reference", "")
+    with col_s2: status_f = st.selectbox("Filter by Status", ["All","FAILED","SKIPPED","SENT"])
+    with col_s3: error_f  = st.selectbox("Filter by Failure Reason", ["All"] + list(filtered_df['error_message'].unique()))
 
     exp_df = filtered_df.copy()
     if search_q:
@@ -1045,7 +1043,7 @@ def render_action_plan_and_triage():
 # ==============================================================================
 # 6. ORCHESTRATION
 # ==============================================================================
-if dashboard_mode == "📄 Executive Comprehensive Report (All Sections)":
+if dashboard_mode == "📄 Full Report (All Sections)":
     render_executive_kpis()
     render_what_if_simulator()
     render_funnel_and_leakage()
@@ -1056,13 +1054,13 @@ if dashboard_mode == "📄 Executive Comprehensive Report (All Sections)":
     render_action_plan_and_triage()
 else:
     tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
-        "📊 Scorecards & Simulator",
-        "🔻 Funnel & Leakage",
-        "📱 Channel Matrix",
-        "⚡ Triggers & Templates",
-        "📈 Time Trends & Heatmap",
+        "📊 Summary & Simulator",
+        "🔻 Delivery Funnel",
+        "📱 Channel Breakdown",
+        "⚡ Onsite vs. Online",
+        "📈 Trends & Heatmaps",
         "📍 Locations & Trainers",
-        "🛠️ Action Plan & Triage"
+        "🛠️ Fix Plan & Lookup"
     ])
     with tab1:
         render_executive_kpis()
