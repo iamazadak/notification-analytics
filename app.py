@@ -382,22 +382,43 @@ def render_funnel_and_leakage():
     ]
     bar_colors = [PALETTE['navy'], PALETTE['ocean'], PALETTE['teal'], PALETTE['sage'], PALETTE['muted']]
 
-    fig_funnel = go.Figure(go.Bar(
-        x=values, y=stages, orientation='h',
-        marker=dict(color=bar_colors, line=dict(color=PALETTE['border'], width=1)),
-        text=[f"<b>{v:,}</b>  —  {p}" if v > 0 else "<b>0</b>  —  No read receipts tracked yet" for v, p in zip(values, percents)],
+    fig_funnel = go.Figure()
+
+    # Draw bars for stages 1-4 (have actual values)
+    fig_funnel.add_trace(go.Bar(
+        x=values[:-1], y=stages[:-1], orientation='h',
+        marker=dict(color=bar_colors[:-1], line=dict(color=PALETTE['border'], width=1)),
+        text=[f"<b>{v:,}</b>   {p}" for v, p in zip(values[:-1], percents[:-1])],
         textposition='outside',
         textfont=dict(family='Inter, sans-serif', size=12, color=PALETTE['charcoal']),
         cliponaxis=False,
-        hovertext=[f"<b>{s}</b><br>Volume: {v:,}<br>{p}" for s, v, p in zip(stages, values, percents)],
-        hoverinfo='text'
+        hovertext=[f"<b>{s}</b><br>Volume: {v:,}<br>{p}" for s, v, p in zip(stages[:-1], values[:-1], percents[:-1])],
+        hoverinfo='text', showlegend=False
     ))
-    fig_funnel.update_layout(
-        yaxis=dict(autorange="reversed", showgrid=False, tickfont=dict(size=12.5, color=PALETTE['charcoal'])),
-        xaxis=dict(title="Volume", showgrid=True, gridcolor='#f1f5f9', range=[0, total_n * 1.55]),
-        bargap=0.22
+
+    # Stage 5 = zero — draw a tiny stub bar + annotation instead of a bar label
+    fig_funnel.add_trace(go.Bar(
+        x=[1], y=[stages[-1]], orientation='h',          # stub width=1 so it's visible
+        marker=dict(color=bar_colors[-1], line=dict(color=PALETTE['border'], width=0)),
+        hovertext=[f"<b>{stages[-1]}</b><br>Not yet tracked — webhooks not connected"],
+        hoverinfo='text', showlegend=False
+    ))
+    fig_funnel.add_annotation(
+        x=1, y=stages[-1],
+        text="<b>0</b>   Read receipts not yet tracked",
+        xanchor='left', xshift=8,
+        showarrow=False,
+        font=dict(size=12, color=PALETTE['muted'], family='Inter')
     )
-    st.plotly_chart(apply_exec_chart_theme(fig_funnel, height=340, show_legend=False, pad_l=55, pad_r=20, pad_t=30, pad_b=45))
+
+    fig_funnel.update_layout(
+        yaxis=dict(autorange="reversed", showgrid=False,
+                   tickfont=dict(size=12, color=PALETTE['charcoal'])),
+        xaxis=dict(title="Volume", showgrid=True, gridcolor='#f1f5f9',
+                   range=[0, total_n * 1.65]),
+        bargap=0.25
+    )
+    st.plotly_chart(apply_exec_chart_theme(fig_funnel, height=360, show_legend=False, pad_l=245, pad_r=18, pad_t=30, pad_b=45))
     st.markdown('</div>', unsafe_allow_html=True)
 
     col_f1, col_f2 = st.columns([1.4, 0.6])
@@ -426,22 +447,31 @@ def render_funnel_and_leakage():
 
         fig_leak = go.Figure(go.Bar(
             x=top_leaks['Count'],
-            y=[r[:42]+'...' if len(r) > 42 else r for r in top_leaks['Reason']],
+            y=[r[:38]+'…' if len(r) > 38 else r for r in top_leaks['Reason']],
             orientation='h',
-            marker=dict(color=[get_leak_color(r) for r in top_leaks['Reason']], line=dict(color=PALETTE['border'], width=1)),
-            text=[f"  {c:,}  ({p}%)" for c, p in zip(top_leaks['Count'], top_leaks['Pct'])],
+            marker=dict(
+                color=[get_leak_color(r) for r in top_leaks['Reason']],
+                line=dict(color=PALETTE['border'], width=1)
+            ),
+            text=[f"<b>{c:,}</b>  ({p}%  of failures)" for c, p in zip(top_leaks['Count'], top_leaks['Pct'])],
             textposition='outside',
-            textfont=dict(family='Inter, sans-serif', size=11.5, color=PALETTE['charcoal']),
+            textfont=dict(family='Inter, sans-serif', size=12, color=PALETTE['charcoal']),
             cliponaxis=False,
-            hovertext=[f"<b>{r}</b><br>Failed Attempts: {c:,}<br>Share: {p}%" for r, c, p in zip(top_leaks['Reason'], top_leaks['Count'], top_leaks['Pct'])],
+            hovertext=[f"<b>{r}</b><br>Failed Attempts: {c:,}<br>Share of all failures: {p}%" for r, c, p in zip(top_leaks['Reason'], top_leaks['Count'], top_leaks['Pct'])],
             hoverinfo='text'
         ))
         fig_leak.update_layout(
-            yaxis=dict(autorange="reversed", showgrid=False, tickfont=dict(size=11.5)),
-            xaxis=dict(title="Number of Failed / Skipped Attempts", showgrid=True, gridcolor='#f1f5f9', range=[0, top_leaks['Count'].max() * 1.4]),
-            bargap=0.28
+            yaxis=dict(autorange="reversed", showgrid=False,
+                       tickfont=dict(size=12, color=PALETTE['charcoal']),
+                       tickmode='array',
+                       ticktext=[r[:38]+'…' if len(r) > 38 else r for r in top_leaks['Reason']],
+                       tickvals=list(range(len(top_leaks)))),
+            xaxis=dict(title="Number of Failed / Skipped Attempts", showgrid=True,
+                       gridcolor='#f1f5f9',
+                       range=[0, top_leaks['Count'].max() * 1.65]),
+            bargap=0.3
         )
-        st.plotly_chart(apply_exec_chart_theme(fig_leak, height=360, show_legend=False, pad_l=55, pad_r=50, pad_t=30, pad_b=45))
+        st.plotly_chart(apply_exec_chart_theme(fig_leak, height=360, show_legend=False, pad_l=260, pad_r=18, pad_t=30, pad_b=45))
         st.markdown('</div>', unsafe_allow_html=True)
 
     with col_f2:
@@ -453,19 +483,39 @@ def render_funnel_and_leakage():
             action="The 32% missed segment is the primary target — see Section 7 for the step-by-step fix plan."
         )
 
-        reach_vals = [int(filtered_notif_df['is_reached'].sum()), int((~filtered_notif_df['is_reached']).sum())]
-        reach_labels = ['Reached (at least 1 channel)', 'Not Reached (all channels failed)']
+        reach_vals   = [int(filtered_notif_df['is_reached'].sum()), int((~filtered_notif_df['is_reached']).sum())]
+        reach_labels = ['Reached', 'Not Reached']
+        reach_total  = sum(reach_vals)
+        reach_pcts   = [f"{v/reach_total*100:.1f}%" for v in reach_vals]
 
         fig_donut2 = go.Figure(go.Pie(
-            labels=reach_labels, values=reach_vals, hole=0.62,
-            marker=dict(colors=[STATUS_COLORS['REACHED'], STATUS_COLORS['UNREACHED']], line=dict(color='white', width=2)),
-            textinfo='label+percent', textfont=dict(size=11.5, family='Inter'),
+            labels=reach_labels,
+            values=reach_vals,
+            hole=0.65,
+            marker=dict(
+                colors=[STATUS_COLORS['REACHED'], STATUS_COLORS['UNREACHED']],
+                line=dict(color='white', width=3)
+            ),
+            textinfo='percent',                          # only % on slice — no long label
+            textfont=dict(size=14, family='Inter', color='white'),
+            insidetextorientation='horizontal',
             hovertemplate="<b>%{label}</b><br>%{value:,} candidates<br>%{percent}<extra></extra>"
         ))
+        # Centre annotation: reached count + rate
         fig_donut2.update_layout(
-            annotations=[dict(text=f"<b>{reach_vals[0]:,}</b><br>Reached", x=0.5, y=0.5, font_size=14, showarrow=False)]
+            annotations=[dict(
+                text=f"<b>{reach_vals[0]:,}</b><br><span style='font-size:11px'>Reached<br>{reach_pcts[0]}</span>",
+                x=0.5, y=0.5, font_size=16, showarrow=False,
+                font=dict(family='Inter', color=PALETTE['navy'])
+            )],
+            legend=dict(
+                orientation='h', x=0.5, xanchor='center', y=-0.12,
+                font=dict(size=12.5, family='Inter'),
+                traceorder='normal'
+            ),
+            showlegend=True
         )
-        st.plotly_chart(apply_exec_chart_theme(fig_donut2, height=360, show_legend=False, pad_l=20, pad_r=20, pad_t=30, pad_b=30))
+        st.plotly_chart(apply_exec_chart_theme(fig_donut2, height=360, show_legend=True, pad_l=20, pad_r=20, pad_t=20, pad_b=10))
         st.markdown('</div>', unsafe_allow_html=True)
 
 
