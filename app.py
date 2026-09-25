@@ -741,10 +741,10 @@ def render_time_series():
         z=pivot_heat.values,
         x=[fmt_hr(int(c)) for c in pivot_heat.columns],
         y=pivot_heat.index.tolist(),
-        colorscale=[[0.0,"#f8fafc"],[0.15,"#e0f2fe"],[0.5,"#38bdf8"],[0.8,"#0284c7"],[1.0,PALETTE["navy"]]],
+        colorscale=[[0.0,"#fefce8"],[0.2,"#fef08a"],[0.45,"#fb923c"],[0.72,"#dc2626"],[1.0,"#7f1d1d"]],
         colorbar=dict(title="Volume", thickness=14, outlinewidth=0),
         text=heat_text, texttemplate="%{text}",
-        textfont=dict(size=10.5, color="#1e293b", family='Inter'),
+        textfont=dict(size=10.5, color="#ffffff", family='Inter'),
         hoverongaps=False,
         hovertemplate="<b>%{y} — %{x}</b><br>Volume: %{z:,}<extra></extra>"
     ))
