@@ -396,10 +396,10 @@ def render_funnel_and_leakage():
         xaxis=dict(title="Volume (Attempts)", showgrid=True, gridcolor='#f1f5f9', range=[0, total_n * 1.18]),
         bargap=0.22
     )
-    st.plotly_chart(apply_exec_chart_theme(fig_funnel, height=300, show_legend=False, pad_l=50, pad_r=40, pad_t=30, pad_b=40))
+    st.plotly_chart(apply_exec_chart_theme(fig_funnel, height=340, show_legend=False, pad_l=55, pad_r=45, pad_t=30, pad_b=45))
     st.markdown('</div>', unsafe_allow_html=True)
 
-    col_f1, col_f2 = st.columns([1.3, 0.7])
+    col_f1, col_f2 = st.columns([1.4, 0.6])
 
     with col_f1:
         st.markdown('<div class="plot-card">', unsafe_allow_html=True)
@@ -440,7 +440,7 @@ def render_funnel_and_leakage():
             xaxis=dict(title="Leakage Count", showgrid=True, gridcolor='#f1f5f9', range=[0, top_leaks['Count'].max() * 1.4]),
             bargap=0.28
         )
-        st.plotly_chart(apply_exec_chart_theme(fig_leak, height=320, show_legend=False, pad_l=50, pad_r=40, pad_t=30, pad_b=40))
+        st.plotly_chart(apply_exec_chart_theme(fig_leak, height=360, show_legend=False, pad_l=55, pad_r=50, pad_t=30, pad_b=45))
         st.markdown('</div>', unsafe_allow_html=True)
 
     with col_f2:
@@ -464,7 +464,7 @@ def render_funnel_and_leakage():
         fig_donut2.update_layout(
             annotations=[dict(text=f"<b>{reach_vals[0]:,}</b><br>Reached", x=0.5, y=0.5, font_size=14, showarrow=False)]
         )
-        st.plotly_chart(apply_exec_chart_theme(fig_donut2, height=320, show_legend=False, pad_l=20, pad_r=20, pad_t=30, pad_b=30))
+        st.plotly_chart(apply_exec_chart_theme(fig_donut2, height=360, show_legend=False, pad_l=20, pad_r=20, pad_t=30, pad_b=30))
         st.markdown('</div>', unsafe_allow_html=True)
 
 
@@ -476,7 +476,7 @@ def render_channels_and_providers():
     for col in ['SENT','FAILED','SKIPPED']:
         if col not in ct_ch.columns: ct_ch[col] = 0
 
-    col_c1, col_c2 = st.columns([1.2, 0.8])
+    col_c1, col_c2 = st.columns([1.3, 0.7])
 
     with col_c1:
         st.markdown('<div class="plot-card">', unsafe_allow_html=True)
@@ -509,7 +509,7 @@ def render_channels_and_providers():
             yaxis=dict(title="Delivery Attempts", showgrid=True, gridcolor='#f1f5f9'),
             bargap=0.35
         )
-        st.plotly_chart(apply_exec_chart_theme(fig_ch, height=360, pad_l=45, pad_r=30, pad_t=55))
+        st.plotly_chart(apply_exec_chart_theme(fig_ch, height=400, pad_l=50, pad_r=35, pad_t=60, pad_b=45))
         st.markdown('</div>', unsafe_allow_html=True)
 
     with col_c2:
@@ -534,7 +534,7 @@ def render_channels_and_providers():
         fig_donut.update_layout(
             annotations=[dict(text=f"<b>{total_legs_val:,}</b><br>Total Legs", x=0.5, y=0.5, font_size=14, showarrow=False)]
         )
-        st.plotly_chart(apply_exec_chart_theme(fig_donut, height=360, show_legend=False, pad_l=20, pad_r=20, pad_t=40, pad_b=30))
+        st.plotly_chart(apply_exec_chart_theme(fig_donut, height=400, show_legend=False, pad_l=20, pad_r=20, pad_t=40, pad_b=30))
         st.markdown('</div>', unsafe_allow_html=True)
 
     ce1, ce2, ce3, ce4 = st.columns(4)
@@ -571,7 +571,7 @@ def render_triggers_and_templates():
     trig_reach['dropped']    = trig_reach['total'] - trig_reach['reached']
     trig_reach = trig_reach.sort_values(by='reach_rate', ascending=False)
 
-    col_tr1, col_tr2 = st.columns([1.2, 0.8])
+    col_tr1, col_tr2 = st.columns([1.3, 0.7])
 
     with col_tr1:
         st.markdown('<div class="plot-card">', unsafe_allow_html=True)
@@ -602,7 +602,7 @@ def render_triggers_and_templates():
         )
         fig_reach.add_hline(y=70, line_dash="dot", line_color=PALETTE['teal'],  annotation_text="70% Target",  annotation_position="right")
         fig_reach.add_hline(y=40, line_dash="dot", line_color=PALETTE['amber'], annotation_text="40% Warning", annotation_position="right")
-        st.plotly_chart(apply_exec_chart_theme(fig_reach, height=360, show_legend=False, pad_l=45, pad_r=55, pad_t=55, pad_b=40))
+        st.plotly_chart(apply_exec_chart_theme(fig_reach, height=420, show_legend=False, pad_l=50, pad_r=65, pad_t=60, pad_b=50))
         st.markdown('</div>', unsafe_allow_html=True)
 
     with col_tr2:
@@ -640,7 +640,7 @@ def render_time_series():
     daily_df['success_rate'] = (daily_df['sent_count'] / daily_df['total_attempts'] * 100).round(1)
     daily_df['date_str']     = daily_df['notification_date'].astype(str)
 
-    col_t1, col_t2 = st.columns([1.35, 0.65])
+    col_t1, col_t2 = st.columns([1.5, 0.5])
 
     with col_t1:
         st.markdown('<div class="plot-card">', unsafe_allow_html=True)
@@ -677,7 +677,7 @@ def render_time_series():
             yaxis2=dict(title="Sent Rate (%)", overlaying='y', side='right', range=[0, 115], showgrid=False),
             bargap=0.25
         )
-        st.plotly_chart(apply_exec_chart_theme(fig_time, height=360, pad_l=45, pad_r=55, pad_t=55, pad_b=45))
+        st.plotly_chart(apply_exec_chart_theme(fig_time, height=400, pad_l=50, pad_r=65, pad_t=60, pad_b=50))
         st.markdown('</div>', unsafe_allow_html=True)
 
     with col_t2:
@@ -711,7 +711,7 @@ def render_time_series():
             yaxis=dict(title="Volume", showgrid=True, gridcolor='#f1f5f9', range=[0, day_cnts['Count'].max() * 1.3]),
             bargap=0.3
         )
-        st.plotly_chart(apply_exec_chart_theme(fig_dow, height=360, show_legend=False, pad_l=40, pad_r=25, pad_t=50, pad_b=40))
+        st.plotly_chart(apply_exec_chart_theme(fig_dow, height=400, show_legend=False, pad_l=45, pad_r=25, pad_t=55, pad_b=50))
         st.markdown('</div>', unsafe_allow_html=True)
 
     # ── Heatmap 1: Day of Week × Hour of Day ──
@@ -735,7 +735,16 @@ def render_time_series():
         if h == 12:  return "12 PM"
         return f"{h-12} PM"
 
-    HEAT_COLORSCALE = [[0.0,"#fefce8"],[0.2,"#fef08a"],[0.45,"#fb923c"],[0.72,"#dc2626"],[1.0,"#7f1d1d"]]
+    # Traffic-light palette: green (low) → yellow-green → amber → orange → red (peak)
+    HEAT_COLORSCALE = [
+        [0.0,  "#f9fafb"],   # empty / zero
+        [0.05, "#5a9e3a"],   # bright green  (low)
+        [0.25, "#93c840"],   # yellow-green
+        [0.45, "#f5c518"],   # golden amber
+        [0.65, "#f28a1e"],   # orange
+        [0.82, "#e04a2a"],   # orange-red
+        [1.0,  "#b71c1c"],   # deep red (peak)
+    ]
 
     heat_text = [[str(v) if v > 0 else "" for v in row] for row in pivot_heat.values]
 
@@ -746,15 +755,18 @@ def render_time_series():
         colorscale=HEAT_COLORSCALE,
         colorbar=dict(title="Volume", thickness=14, outlinewidth=0),
         text=heat_text, texttemplate="%{text}",
-        textfont=dict(size=10.5, color="#ffffff", family='Inter'),
+        textfont=dict(size=12, color="#ffffff", family='Inter'),
         hoverongaps=False,
-        hovertemplate="<b>%{y} — %{x}</b><br>Volume: %{z:,}<extra></extra>"
+        hovertemplate="<b>%{y} — %{x}</b><br>Volume: %{z:,}<extra></extra>",
+        xgap=2, ygap=3
     ))
     fig_heat.update_layout(
-        xaxis=dict(title="Dispatch Hour", showgrid=False, tickfont=dict(size=11)),
-        yaxis=dict(title="", autorange="reversed", showgrid=False, tickfont=dict(size=12))
+        xaxis=dict(title="Dispatch Hour (UTC)", showgrid=False,
+                   tickfont=dict(size=11.5, family='Inter'), tickangle=-30),
+        yaxis=dict(title="", autorange="reversed", showgrid=False,
+                   tickfont=dict(size=13, family='Inter'))
     )
-    st.plotly_chart(apply_exec_chart_theme(fig_heat, height=290, show_legend=False, pad_l=50, pad_r=30, pad_t=35, pad_b=35))
+    st.plotly_chart(apply_exec_chart_theme(fig_heat, height=340, show_legend=False, pad_l=60, pad_r=40, pad_t=30, pad_b=50))
     st.markdown('</div>', unsafe_allow_html=True)
 
     # ── Heatmap 2: Monthly Calendar Heatmap ──
@@ -826,40 +838,41 @@ def render_time_series():
             colorbar=dict(title="Volume", thickness=14, outlinewidth=0),
             text=month_heat_text,
             texttemplate="%{text}",
-            textfont=dict(size=11, color="#ffffff", family='Inter'),
+            textfont=dict(size=12, color="#ffffff", family='Inter'),
             hoverongaps=False,
             hovertemplate="<b>%{y} · %{x}</b><br>Notifications: %{z:,}<extra></extra>",
-            xgap=3, ygap=3
+            xgap=4, ygap=4
         ))
         fig_month_heat.update_layout(
             xaxis=dict(
-                title=f"{sel_month_label} {sel_year} — Each column = one calendar date",
+                title=f"{sel_month_label} {sel_year}  —  Each column = one calendar date",
                 showgrid=False,
-                tickfont=dict(size=10.5, family='Inter'),
-                tickangle=-30
+                tickfont=dict(size=11.5, family='Inter'),
+                tickangle=-35
             ),
             yaxis=dict(
                 title="",
                 autorange="reversed",
                 showgrid=False,
-                tickfont=dict(size=12, family='Inter')
+                tickfont=dict(size=13, family='Inter')
             )
         )
         total_month_vol = int(month_df['delivery_id'].count())
-        peak_day_num    = month_df.groupby('notification_day')['delivery_id'].count().idxmax()
+        peak_day_series = month_df.groupby('notification_day')['delivery_id'].count()
+        peak_day_num    = peak_day_series.idxmax()
         peak_day_lbl    = day_label(peak_day_num)
-        peak_day_vol    = int(month_df.groupby('notification_day')['delivery_id'].count().max())
+        peak_day_vol    = int(peak_day_series.max())
         sent_month      = int(month_df['sent_flag'].sum())
         sent_pct        = round(sent_month / total_month_vol * 100, 1) if total_month_vol > 0 else 0
 
-        # Mini stat strip
+        # Mini stat strip — shown ABOVE chart for context
         ms1, ms2, ms3, ms4 = st.columns(4)
-        ms1.metric("Total Attempts",   f"{total_month_vol:,}")
-        ms2.metric("Successfully Sent", f"{sent_month:,}",  f"{sent_pct}% sent rate")
-        ms3.metric("Peak Day",          peak_day_lbl,        f"{peak_day_vol:,} attempts")
-        ms4.metric("Active Days",       f"{month_df['notification_day'].nunique()} days")
+        ms1.metric("Total Attempts",    f"{total_month_vol:,}")
+        ms2.metric("Successfully Sent", f"{sent_month:,}",   f"{sent_pct}% sent rate")
+        ms3.metric("Peak Day",           peak_day_lbl,         f"{peak_day_vol:,} attempts")
+        ms4.metric("Active Days",        f"{month_df['notification_day'].nunique()} days")
 
-        st.plotly_chart(apply_exec_chart_theme(fig_month_heat, height=310, show_legend=False, pad_l=55, pad_r=30, pad_t=30, pad_b=50))
+        st.plotly_chart(apply_exec_chart_theme(fig_month_heat, height=360, show_legend=False, pad_l=65, pad_r=40, pad_t=20, pad_b=55))
 
     st.markdown('</div>', unsafe_allow_html=True)
 
@@ -902,7 +915,7 @@ def render_demographics_and_segmentation():
             yaxis=dict(showgrid=False, tickfont=dict(size=11.5)),
             bargap=0.25
         )
-        st.plotly_chart(apply_exec_chart_theme(fig_loc, height=340, pad_l=15, pad_r=30, pad_t=50, pad_b=35))
+        st.plotly_chart(apply_exec_chart_theme(fig_loc, height=400, pad_l=15, pad_r=40, pad_t=55, pad_b=40))
         st.markdown('</div>', unsafe_allow_html=True)
 
     with col_d2:
@@ -937,7 +950,7 @@ def render_demographics_and_segmentation():
             yaxis=dict(showgrid=False, tickfont=dict(size=11.5)),
             bargap=0.25
         )
-        st.plotly_chart(apply_exec_chart_theme(fig_tr, height=340, pad_l=15, pad_r=30, pad_t=50, pad_b=35))
+        st.plotly_chart(apply_exec_chart_theme(fig_tr, height=400, pad_l=15, pad_r=40, pad_t=55, pad_b=40))
         st.markdown('</div>', unsafe_allow_html=True)
 
 
