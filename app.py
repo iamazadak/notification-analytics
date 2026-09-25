@@ -714,13 +714,13 @@ def render_time_series():
         st.plotly_chart(apply_exec_chart_theme(fig_dow, height=360, show_legend=False, pad_l=40, pad_r=25, pad_t=50, pad_b=40))
         st.markdown('</div>', unsafe_allow_html=True)
 
-    # Full-width Heatmap
+    # ── Heatmap 1: Day of Week × Hour of Day ──
     st.markdown('<div class="plot-card">', unsafe_allow_html=True)
     render_chart_header(
-        title="🕒 Temporal Influx Heatmap — Day of Week x Hour of Day",
+        title="🕒 Temporal Influx Heatmap — Day of Week × Hour of Day",
         significance="Reveals diurnal scheduling habits and peak dispatch hours where gateway throttling or candidate notification fatigue is most likely to occur.",
-        calculation="2D pivot: Index=notification_day_name, Columns=notification_hour (0-23), Values=COUNT(delivery_id). Color gradient: light=low volume, dark navy=peak volume.",
-        action="Shift automated candidate reminders to 10 AM to 2 PM local time to maximize read rates and minimize delivery noise."
+        calculation="2D pivot: Index=notification_day_name, Columns=notification_hour (0-23), Values=COUNT(delivery_id). Warm gradient: cream=zero activity, crimson=peak volume.",
+        action="Shift automated candidate reminders to 10 AM–2 PM local time to maximize read rates and minimize delivery noise."
     )
 
     pivot_heat = filtered_df.pivot_table(
@@ -735,13 +735,15 @@ def render_time_series():
         if h == 12:  return "12 PM"
         return f"{h-12} PM"
 
+    HEAT_COLORSCALE = [[0.0,"#fefce8"],[0.2,"#fef08a"],[0.45,"#fb923c"],[0.72,"#dc2626"],[1.0,"#7f1d1d"]]
+
     heat_text = [[str(v) if v > 0 else "" for v in row] for row in pivot_heat.values]
 
     fig_heat = go.Figure(go.Heatmap(
         z=pivot_heat.values,
         x=[fmt_hr(int(c)) for c in pivot_heat.columns],
         y=pivot_heat.index.tolist(),
-        colorscale=[[0.0,"#fefce8"],[0.2,"#fef08a"],[0.45,"#fb923c"],[0.72,"#dc2626"],[1.0,"#7f1d1d"]],
+        colorscale=HEAT_COLORSCALE,
         colorbar=dict(title="Volume", thickness=14, outlinewidth=0),
         text=heat_text, texttemplate="%{text}",
         textfont=dict(size=10.5, color="#ffffff", family='Inter'),
@@ -753,6 +755,112 @@ def render_time_series():
         yaxis=dict(title="", autorange="reversed", showgrid=False, tickfont=dict(size=12))
     )
     st.plotly_chart(apply_exec_chart_theme(fig_heat, height=290, show_legend=False, pad_l=50, pad_r=30, pad_t=35, pad_b=35))
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # ── Heatmap 2: Monthly Calendar Heatmap ──
+    st.markdown('<div class="plot-card">', unsafe_allow_html=True)
+    render_chart_header(
+        title="📅 Monthly Calendar Heatmap — Day of Week × Date",
+        significance="Provides a calendar-view of daily dispatch intensity within a chosen month, exposing specific high-load dates, weekday clustering patterns, and scheduling batch surges.",
+        calculation="Filter by selected Month + Year. Pivot: Index=notification_day_name (Mon–Sun), Columns=notification_day (1–31), Values=COUNT(delivery_id). Each cell shows the actual date number and volume.",
+        action="Use this view to identify specific high-volume dates for capacity planning and to schedule maintenance windows on low-volume days."
+    )
+
+    # Month / Year selectors
+    avail_years  = sorted(filtered_df['notification_year'].dropna().unique().astype(int).tolist(), reverse=True)
+    avail_months_map = {}
+    for yr in avail_years:
+        months_in_yr = filtered_df[filtered_df['notification_year'] == yr]['notification_month_number'].dropna().unique().astype(int).tolist()
+        avail_months_map[yr] = sorted(months_in_yr)
+
+    import calendar as cal_lib
+
+    sel_col1, sel_col2, sel_col3 = st.columns([0.22, 0.22, 0.56])
+    with sel_col1:
+        sel_year  = st.selectbox("📆 Year",  avail_years,  index=0, key="monthly_heat_year")
+    with sel_col2:
+        month_nums = avail_months_map.get(sel_year, [])
+        month_labels = [cal_lib.month_name[m] for m in month_nums]
+        sel_month_label = st.selectbox("🗓️ Month", month_labels, index=len(month_labels)-1, key="monthly_heat_month")
+        sel_month_num   = month_nums[month_labels.index(sel_month_label)]
+
+    # Filter to selected month+year
+    month_df = filtered_df[
+        (filtered_df['notification_year']         == sel_year) &
+        (filtered_df['notification_month_number'] == sel_month_num)
+    ].copy()
+
+    if len(month_df) == 0:
+        st.info(f"No data available for {sel_month_label} {sel_year} under the current sidebar filters.")
+    else:
+        # Build pivot: rows=day_of_week, cols=day_of_month
+        month_pivot = month_df.pivot_table(
+            index='notification_day_name',
+            columns='notification_day',
+            values='delivery_id',
+            aggfunc='count',
+            fill_value=0
+        )
+        month_pivot = month_pivot.reindex([d for d in day_order if d in month_pivot.index])
+        month_pivot = month_pivot.reindex(sorted(month_pivot.columns), axis=1)
+
+        # Cell text: show count only (suppress zeros)
+        month_heat_text = [[str(int(v)) if v > 0 else "" for v in row] for row in month_pivot.values]
+
+        # X-axis labels: "Mon 15", "Tue 16", etc. — map day number to day-of-week
+        import datetime as dt_mod
+        def day_label(day_num):
+            try:
+                d = dt_mod.date(int(sel_year), int(sel_month_num), int(day_num))
+                return f"{d.strftime('%a')} {int(day_num)}"
+            except Exception:
+                return str(int(day_num))
+
+        x_labels = [day_label(d) for d in month_pivot.columns]
+
+        fig_month_heat = go.Figure(go.Heatmap(
+            z=month_pivot.values,
+            x=x_labels,
+            y=month_pivot.index.tolist(),
+            colorscale=HEAT_COLORSCALE,
+            colorbar=dict(title="Volume", thickness=14, outlinewidth=0),
+            text=month_heat_text,
+            texttemplate="%{text}",
+            textfont=dict(size=11, color="#ffffff", family='Inter'),
+            hoverongaps=False,
+            hovertemplate="<b>%{y} · %{x}</b><br>Notifications: %{z:,}<extra></extra>",
+            xgap=3, ygap=3
+        ))
+        fig_month_heat.update_layout(
+            xaxis=dict(
+                title=f"{sel_month_label} {sel_year} — Each column = one calendar date",
+                showgrid=False,
+                tickfont=dict(size=10.5, family='Inter'),
+                tickangle=-30
+            ),
+            yaxis=dict(
+                title="",
+                autorange="reversed",
+                showgrid=False,
+                tickfont=dict(size=12, family='Inter')
+            )
+        )
+        total_month_vol = int(month_df['delivery_id'].count())
+        peak_day_num    = month_df.groupby('notification_day')['delivery_id'].count().idxmax()
+        peak_day_lbl    = day_label(peak_day_num)
+        peak_day_vol    = int(month_df.groupby('notification_day')['delivery_id'].count().max())
+        sent_month      = int(month_df['sent_flag'].sum())
+        sent_pct        = round(sent_month / total_month_vol * 100, 1) if total_month_vol > 0 else 0
+
+        # Mini stat strip
+        ms1, ms2, ms3, ms4 = st.columns(4)
+        ms1.metric("Total Attempts",   f"{total_month_vol:,}")
+        ms2.metric("Successfully Sent", f"{sent_month:,}",  f"{sent_pct}% sent rate")
+        ms3.metric("Peak Day",          peak_day_lbl,        f"{peak_day_vol:,} attempts")
+        ms4.metric("Active Days",       f"{month_df['notification_day'].nunique()} days")
+
+        st.plotly_chart(apply_exec_chart_theme(fig_month_heat, height=310, show_legend=False, pad_l=55, pad_r=30, pad_t=30, pad_b=50))
+
     st.markdown('</div>', unsafe_allow_html=True)
 
 
