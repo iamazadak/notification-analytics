@@ -38,21 +38,21 @@ PALETTE = {
     "text_pill_blue": "#1e40af"
 }
 
-# ── Status: green=success, amber=warning/skipped, red=failure (consistent everywhere) ──
+# ── Status: muted, dark tones — consistent everywhere ──
 STATUS_COLORS = {
-    "SENT":      "#16a34a",   # green-600
-    "FAILED":    "#dc2626",   # red-600
-    "SKIPPED":   "#d97706",   # amber-600
-    "REACHED":   "#16a34a",   # green-600  (same as SENT)
-    "UNREACHED": "#dc2626",   # red-600    (same as FAILED)
+    "SENT":      "#1f9a89",   # teal        (original palette — calm, professional green)
+    "FAILED":    "#c45f64",   # crimson     (original palette — darker, not neon red)
+    "SKIPPED":   "#cda36f",   # amber       (original palette — warm ochre)
+    "REACHED":   "#1f9a89",   # teal        (same as SENT)
+    "UNREACHED": "#c45f64",   # crimson     (same as FAILED)
 }
 
-# ── Channels: brand-aligned, distinct from each other and from status colors ──
+# ── Channels: muted, brand-adjacent, distinct from status and each other ──
 CHANNEL_COLORS = {
-    "email":     "#2563eb",   # blue-600     (classic email blue)
-    "whatsapp":  "#059669",   # emerald-600  (WhatsApp brand green)
-    "push":      "#7c3aed",   # violet-600   (push / app icon purple)
-    "sms":       "#ea580c",   # orange-600   (SMS / telecoms orange)
+    "email":     "#2c79c5",   # ocean blue      (original palette ocean)
+    "whatsapp":  "#3d7a5e",   # dark sage green  (distinct from teal/SENT)
+    "push":      "#7e519e",   # muted purple     (original palette)
+    "sms":       "#a06040",   # burnt sienna     (dark earthy orange, distinct from amber/coral)
 }
 
 st.markdown(f"""
