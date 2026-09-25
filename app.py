@@ -805,74 +805,86 @@ def render_time_series():
     if len(month_df) == 0:
         st.info(f"No data available for {sel_month_label} {sel_year} under the current sidebar filters.")
     else:
-        # Build pivot: rows=day_of_week, cols=day_of_month
-        month_pivot = month_df.pivot_table(
-            index='notification_day_name',
-            columns='notification_day',
-            values='delivery_id',
-            aggfunc='count',
-            fill_value=0
-        )
-        month_pivot = month_pivot.reindex([d for d in day_order if d in month_pivot.index])
-        month_pivot = month_pivot.reindex(sorted(month_pivot.columns), axis=1)
-
-        # Cell text: show count only (suppress zeros)
-        month_heat_text = [[str(int(v)) if v > 0 else "" for v in row] for row in month_pivot.values]
-
-        # X-axis labels: "Mon 15", "Tue 16", etc. — map day number to day-of-week
         import datetime as dt_mod
-        def day_label(day_num):
+
+        # ── Aggregate by date only (flat / single-row) ──
+        day_agg = (
+            month_df.groupby('notification_day')
+            .agg(volume=('delivery_id', 'count'), sent=('sent_flag', 'sum'))
+            .reset_index()
+            .sort_values('notification_day')
+        )
+
+        # Build X-axis labels: "15, Mon" — date number + comma + 3-letter weekday
+        def make_date_label(day_num):
             try:
                 d = dt_mod.date(int(sel_year), int(sel_month_num), int(day_num))
-                return f"{d.strftime('%a')} {int(day_num)}"
+                return f"{int(day_num)}, {d.strftime('%a')}"
             except Exception:
                 return str(int(day_num))
 
-        x_labels = [day_label(d) for d in month_pivot.columns]
+        x_labels   = [make_date_label(d) for d in day_agg['notification_day']]
+        z_values   = [[int(v) for v in day_agg['volume']]]    # single row
+        cell_text  = [[str(int(v)) if v > 0 else "" for v in day_agg['volume']]]
+
+        # Full date strings for hover
+        hover_dates = []
+        for d_num in day_agg['notification_day']:
+            try:
+                hover_dates.append(
+                    dt_mod.date(int(sel_year), int(sel_month_num), int(d_num))
+                    .strftime('%d %b %Y, %A')
+                )
+            except Exception:
+                hover_dates.append(str(int(d_num)))
 
         fig_month_heat = go.Figure(go.Heatmap(
-            z=month_pivot.values,
+            z=z_values,
             x=x_labels,
-            y=month_pivot.index.tolist(),
+            y=["Notifications"],          # single invisible row label
             colorscale=HEAT_COLORSCALE,
-            colorbar=dict(title="Volume", thickness=14, outlinewidth=0),
-            text=month_heat_text,
+            colorbar=dict(title="Volume", thickness=14, outlinewidth=0,
+                          tickfont=dict(size=11, family='Inter')),
+            text=cell_text,
             texttemplate="%{text}",
-            textfont=dict(size=12, color="#ffffff", family='Inter'),
+            textfont=dict(size=13, color="#ffffff", family='Inter', weight=700),
             hoverongaps=False,
-            hovertemplate="<b>%{y} · %{x}</b><br>Notifications: %{z:,}<extra></extra>",
-            xgap=4, ygap=4
+            customdata=[[f"{hd} — {int(v):,} attempts" for hd, v in zip(hover_dates, day_agg['volume'])]],
+            hovertemplate="<b>%{customdata}</b><extra></extra>",
+            xgap=4, ygap=0
         ))
         fig_month_heat.update_layout(
             xaxis=dict(
-                title=f"{sel_month_label} {sel_year}  —  Each column = one calendar date",
+                title=f"{sel_month_label} {sel_year}  —  date, weekday",
                 showgrid=False,
-                tickfont=dict(size=11.5, family='Inter'),
-                tickangle=-35
+                tickfont=dict(size=12, family='Inter', color=PALETTE['charcoal']),
+                tickangle=0,
+                side='bottom'
             ),
             yaxis=dict(
-                title="",
-                autorange="reversed",
+                showticklabels=False,   # hide the single "Notifications" label
                 showgrid=False,
-                tickfont=dict(size=13, family='Inter')
+                fixedrange=True
             )
         )
-        total_month_vol = int(month_df['delivery_id'].count())
-        peak_day_series = month_df.groupby('notification_day')['delivery_id'].count()
-        peak_day_num    = peak_day_series.idxmax()
-        peak_day_lbl    = day_label(peak_day_num)
-        peak_day_vol    = int(peak_day_series.max())
-        sent_month      = int(month_df['sent_flag'].sum())
-        sent_pct        = round(sent_month / total_month_vol * 100, 1) if total_month_vol > 0 else 0
+
+        # Peak day helper using the already-computed day_agg
+        peak_row       = day_agg.loc[day_agg['volume'].idxmax()]
+        peak_day_lbl   = make_date_label(peak_row['notification_day'])
+        peak_day_vol   = int(peak_row['volume'])
+        total_month_vol= int(day_agg['volume'].sum())
+        sent_month     = int(day_agg['sent'].sum())
+        sent_pct       = round(sent_month / total_month_vol * 100, 1) if total_month_vol > 0 else 0
 
         # Mini stat strip — shown ABOVE chart for context
         ms1, ms2, ms3, ms4 = st.columns(4)
         ms1.metric("Total Attempts",    f"{total_month_vol:,}")
+
         ms2.metric("Successfully Sent", f"{sent_month:,}",   f"{sent_pct}% sent rate")
         ms3.metric("Peak Day",           peak_day_lbl,         f"{peak_day_vol:,} attempts")
         ms4.metric("Active Days",        f"{month_df['notification_day'].nunique()} days")
 
-        st.plotly_chart(apply_exec_chart_theme(fig_month_heat, height=360, show_legend=False, pad_l=65, pad_r=40, pad_t=20, pad_b=55))
+        st.plotly_chart(apply_exec_chart_theme(fig_month_heat, height=220, show_legend=False, pad_l=30, pad_r=50, pad_t=15, pad_b=55))
 
     st.markdown('</div>', unsafe_allow_html=True)
 
