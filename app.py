@@ -385,19 +385,19 @@ def render_funnel_and_leakage():
     fig_funnel = go.Figure(go.Bar(
         x=values, y=stages, orientation='h',
         marker=dict(color=bar_colors, line=dict(color=PALETTE['border'], width=1)),
-        text=[f"  {v:,}   {p}" if v > 0 else "  0   No webhook receipts tracked" for v, p in zip(values, percents)],
-        textposition='auto',
-        textfont=dict(family='Inter, sans-serif', size=11.5, color='white'),
-        insidetextanchor='middle',
+        text=[f"<b>{v:,}</b>  —  {p}" if v > 0 else "<b>0</b>  —  No read receipts tracked yet" for v, p in zip(values, percents)],
+        textposition='outside',
+        textfont=dict(family='Inter, sans-serif', size=12, color=PALETTE['charcoal']),
+        cliponaxis=False,
         hovertext=[f"<b>{s}</b><br>Volume: {v:,}<br>{p}" for s, v, p in zip(stages, values, percents)],
         hoverinfo='text'
     ))
     fig_funnel.update_layout(
         yaxis=dict(autorange="reversed", showgrid=False, tickfont=dict(size=12.5, color=PALETTE['charcoal'])),
-        xaxis=dict(title="Volume (Attempts)", showgrid=True, gridcolor='#f1f5f9', range=[0, total_n * 1.18]),
+        xaxis=dict(title="Volume", showgrid=True, gridcolor='#f1f5f9', range=[0, total_n * 1.55]),
         bargap=0.22
     )
-    st.plotly_chart(apply_exec_chart_theme(fig_funnel, height=340, show_legend=False, pad_l=55, pad_r=45, pad_t=30, pad_b=45))
+    st.plotly_chart(apply_exec_chart_theme(fig_funnel, height=340, show_legend=False, pad_l=55, pad_r=20, pad_t=30, pad_b=45))
     st.markdown('</div>', unsafe_allow_html=True)
 
     col_f1, col_f2 = st.columns([1.4, 0.6])
@@ -495,19 +495,20 @@ def render_channels_and_providers():
             fig_ch.add_trace(go.Bar(
                 x=[c.upper() for c in ct_ch.index], y=ct_ch[status], name=status,
                 marker_color=color, marker_line=dict(color='white', width=1),
-                text=[f"<b>{int(v):,}</b>" if v > 30 else "" for v in ct_ch[status]],
-                textposition='inside', textfont=dict(size=11, color='white', family='Inter'),
+                text=[f"<b>{int(v):,}</b>" if v > 60 else "" for v in ct_ch[status]],
+                textposition='inside', textfont=dict(size=12, color='white', family='Inter'),
                 insidetextanchor='middle',
                 hovertemplate=f"<b>%{{x}}</b><br>{status}: %{{y:,}}<extra></extra>"
             ))
         for ch, total in zip([c.upper() for c in ct_ch.index], ch_totals):
             fig_ch.add_annotation(x=ch, y=total, text=f"<b>Total: {int(total):,}</b>",
-                showarrow=False, yshift=10, font=dict(size=11, color=PALETTE['charcoal'], family='Inter'))
+                showarrow=False, yshift=14, font=dict(size=12, color=PALETTE['charcoal'], family='Inter'))
 
         fig_ch.update_layout(
             barmode='stack',
             xaxis=dict(title="Channel", showgrid=False, tickfont=dict(size=13, family='Inter', color=PALETTE['charcoal'])),
-            yaxis=dict(title="Delivery Attempts", showgrid=True, gridcolor='#f1f5f9'),
+            yaxis=dict(title="Delivery Attempts", showgrid=True, gridcolor='#f1f5f9',
+                       range=[0, ch_totals.max() * 1.22]),
             bargap=0.35
         )
         st.plotly_chart(apply_exec_chart_theme(fig_ch, height=400, pad_l=50, pad_r=35, pad_t=60, pad_b=45))
@@ -591,14 +592,14 @@ def render_triggers_and_templates():
             marker=dict(color=bar_colors_trig, line=dict(color=PALETTE['border'], width=1)),
             text=[f"<b>{r}%</b>  ({re:,} / {tot:,})" for r, re, tot in zip(trig_reach['reach_rate'], trig_reach['reached'], trig_reach['total'])],
             textposition='outside',
-            textfont=dict(family='Inter', size=11.5, color=PALETTE['charcoal']),
+            textfont=dict(family='Inter', size=12.5, color=PALETTE['charcoal']),
             cliponaxis=False,
             hovertemplate="<b>%{x}</b><br>Reach Rate: %{y:.1f}%<br>Reached: %{customdata[0]:,} of %{customdata[1]:,}<extra></extra>",
             customdata=list(zip(trig_reach['reached'], trig_reach['total']))
         ))
         fig_reach.update_layout(
-            xaxis=dict(title="", showgrid=False, tickangle=-12, tickfont=dict(size=11.5)),
-            yaxis=dict(title="Reachability Rate (%)", showgrid=True, gridcolor='#f1f5f9', range=[0, 122]),
+            xaxis=dict(title="", showgrid=False, tickangle=-12, tickfont=dict(size=12)),
+            yaxis=dict(title="Delivery Success Rate (%)", showgrid=True, gridcolor='#f1f5f9', range=[0, 135]),
             bargap=0.35
         )
         fig_reach.add_hline(y=70, line_dash="dot", line_color=STATUS_COLORS['SENT'],    annotation_text="70% Target",  annotation_position="right", annotation_font_color=STATUS_COLORS['SENT'])
@@ -654,27 +655,31 @@ def render_time_series():
         fig_time = go.Figure()
         fig_time.add_trace(go.Bar(x=daily_df['date_str'], y=daily_df['sent_count'], name='Sent',
             marker_color=STATUS_COLORS['SENT'],
-            text=[f"<b>{v:,}</b>" if v > 0 else "" for v in daily_df['sent_count']],
-            textposition='inside', textfont=dict(size=9.5, color='white', family='Inter'),
+            text=[f"<b>{v:,}</b>" if v > 80 else "" for v in daily_df['sent_count']],
+            textposition='inside', textfont=dict(size=11, color='white', family='Inter'),
             hovertemplate="<b>%{x}</b><br>Sent: %{y:,}<extra></extra>"))
         fig_time.add_trace(go.Bar(x=daily_df['date_str'], y=daily_df['skipped_count'], name='Skipped',
             marker_color=STATUS_COLORS['SKIPPED'],
+            text=[f"<b>{v:,}</b>" if v > 80 else "" for v in daily_df['skipped_count']],
+            textposition='inside', textfont=dict(size=11, color='white', family='Inter'),
             hovertemplate="<b>%{x}</b><br>Skipped: %{y:,}<extra></extra>"))
         fig_time.add_trace(go.Bar(x=daily_df['date_str'], y=daily_df['failed_count'], name='Failed',
             marker_color=STATUS_COLORS['FAILED'],
+            text=[f"<b>{v:,}</b>" if v > 80 else "" for v in daily_df['failed_count']],
+            textposition='inside', textfont=dict(size=11, color='white', family='Inter'),
             hovertemplate="<b>%{x}</b><br>Failed: %{y:,}<extra></extra>"))
         fig_time.add_trace(go.Scatter(x=daily_df['date_str'], y=daily_df['success_rate'],
             name='Sent Rate % (right)', yaxis='y2', mode='lines+markers+text',
             line=dict(color=PALETTE['navy'], width=2.5),
-            marker=dict(size=7, color=PALETTE['navy'], line=dict(color='white', width=1.5)),
+            marker=dict(size=8, color=PALETTE['navy'], line=dict(color='white', width=1.5)),
             text=[f"<b>{r}%</b>" for r in daily_df['success_rate']],
-            textposition='top center', textfont=dict(size=10, color=PALETTE['navy'], family='Inter'),
+            textposition='top center', textfont=dict(size=11.5, color=PALETTE['navy'], family='Inter'),
             hovertemplate="<b>%{x}</b><br>Sent Rate: %{y:.1f}%<extra></extra>"))
         fig_time.update_layout(
             barmode='stack',
             xaxis=dict(title="Date", showgrid=False, tickangle=-30),
             yaxis=dict(title="Attempt Count", showgrid=True, gridcolor='#f1f5f9'),
-            yaxis2=dict(title="Sent Rate (%)", overlaying='y', side='right', range=[0, 115], showgrid=False),
+            yaxis2=dict(title="Sent Rate (%)", overlaying='y', side='right', range=[0, 130], showgrid=False),
             bargap=0.25
         )
         st.plotly_chart(apply_exec_chart_theme(fig_time, height=400, pad_l=50, pad_r=65, pad_t=60, pad_b=50))
@@ -684,9 +689,9 @@ def render_time_series():
         st.markdown('<div class="plot-card">', unsafe_allow_html=True)
         render_chart_header(
             title="📆 Volume by Day of Week",
-            significance="Reveals scheduling patterns across the workweek, exposing peak demand days on communication infrastructure.",
-            calculation="COUNT(delivery_id) by notification_day_name, Monday to Sunday order. Each bar labelled with count and % share.",
-            action="Stagger batch scheduling jobs to reduce Monday morning gateway load concentration."
+            significance="Shows which days of the week have the highest notification activity — useful for spotting batch scheduling patterns or peak load days.",
+            calculation="Total delivery attempts counted per day name (Monday to Sunday), with each bar labelled by count and share percentage. The busiest day is highlighted.",
+            action="Consider spreading large batch sends across the week to avoid overloading the system on peak days."
         )
 
         day_order = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']
@@ -702,17 +707,19 @@ def render_time_series():
                 line=dict(color=PALETTE['border'], width=1)
             ),
             text=[f"<b>{c:,}</b><br>{p}%" for c, p in zip(day_cnts['Count'], day_cnts['Pct'])],
-            textposition='outside', textfont=dict(family='Inter', size=11, color=PALETTE['charcoal']),
+            textposition='outside', textfont=dict(family='Inter', size=12.5, color=PALETTE['charcoal']),
             cliponaxis=False,
             hovertemplate="<b>%{x}</b><br>Volume: %{y:,}<extra></extra>"
         ))
         fig_dow.update_layout(
-            xaxis=dict(title="", showgrid=False, tickangle=-30, tickfont=dict(size=11)),
-            yaxis=dict(title="Volume", showgrid=True, gridcolor='#f1f5f9', range=[0, day_cnts['Count'].max() * 1.3]),
+            xaxis=dict(title="", showgrid=False, tickangle=-30, tickfont=dict(size=12, family='Inter')),
+            yaxis=dict(title="Volume", showgrid=True, gridcolor='#f1f5f9',
+                       range=[0, day_cnts['Count'].max() * 1.45]),
             bargap=0.3
         )
         st.plotly_chart(apply_exec_chart_theme(fig_dow, height=400, show_legend=False, pad_l=45, pad_r=25, pad_t=55, pad_b=50))
         st.markdown('</div>', unsafe_allow_html=True)
+
 
     # ── Heatmap 1: Day of Week × Hour of Day ──
     st.markdown('<div class="plot-card">', unsafe_allow_html=True)
@@ -924,15 +931,15 @@ def render_demographics_and_segmentation():
             fig_loc.add_trace(go.Bar(
                 y=y_labels, x=loc_top[status], name=status, orientation='h',
                 marker_color=color, marker_line=dict(color='white', width=1),
-                text=[f"<b>{int(v):,}</b>" if v > 20 else "" for v in loc_top[status]],
-                textposition='inside', textfont=dict(size=10, color='white', family='Inter'),
+                text=[f"<b>{int(v):,}</b>" if v > 50 else "" for v in loc_top[status]],
+                textposition='inside', textfont=dict(size=11.5, color='white', family='Inter'),
                 insidetextanchor='middle',
                 hovertemplate=f"<b>%{{y}}</b><br>{status}: %{{x:,}}<extra></extra>"
             ))
         fig_loc.update_layout(
             barmode='stack',
             xaxis=dict(title="Delivery Attempts", showgrid=True, gridcolor='#f1f5f9'),
-            yaxis=dict(showgrid=False, tickfont=dict(size=11.5)),
+            yaxis=dict(showgrid=False, tickfont=dict(size=12)),
             bargap=0.25
         )
         st.plotly_chart(apply_exec_chart_theme(fig_loc, height=400, pad_l=15, pad_r=40, pad_t=55, pad_b=40))
@@ -959,15 +966,15 @@ def render_demographics_and_segmentation():
             fig_tr.add_trace(go.Bar(
                 y=y_labels_tr, x=tr_top[status], name=status, orientation='h',
                 marker_color=color, marker_line=dict(color='white', width=1),
-                text=[f"<b>{int(v):,}</b>" if v > 20 else "" for v in tr_top[status]],
-                textposition='inside', textfont=dict(size=10, color='white', family='Inter'),
+                text=[f"<b>{int(v):,}</b>" if v > 50 else "" for v in tr_top[status]],
+                textposition='inside', textfont=dict(size=11.5, color='white', family='Inter'),
                 insidetextanchor='middle',
                 hovertemplate=f"<b>%{{y}}</b><br>{status}: %{{x:,}}<extra></extra>"
             ))
         fig_tr.update_layout(
             barmode='stack',
             xaxis=dict(title="Delivery Attempts", showgrid=True, gridcolor='#f1f5f9'),
-            yaxis=dict(showgrid=False, tickfont=dict(size=11.5)),
+            yaxis=dict(showgrid=False, tickfont=dict(size=12)),
             bargap=0.25
         )
         st.plotly_chart(apply_exec_chart_theme(fig_tr, height=400, pad_l=15, pad_r=40, pad_t=55, pad_b=40))
