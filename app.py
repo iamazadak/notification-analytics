@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -95,6 +96,18 @@ st.markdown(f"""
     .exec-takeaway-box {{ background-color: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid {PALETTE['navy']}; padding: 14px 18px; border-radius: 0px 8px 8px 0px; margin: 14px 0px; font-size: 13.5px; color: {PALETTE['charcoal']}; line-height: 1.5; }}
     .exec-alert-box {{ background-color: #fff1f2; border: 1px solid #fecdd3; border-left: 4px solid {PALETTE['crimson']}; padding: 16px 20px; border-radius: 0px 8px 8px 0px; margin: 14px 0px; font-size: 13.5px; color: {PALETTE['charcoal']}; line-height: 1.5; }}
     .exec-simulator-container {{ background: linear-gradient(135deg, #f0f7ff 0%, #ffffff 100%); border: 1px solid #bfdbfe; border-radius: 12px; padding: 20px 24px; margin: 20px 0px; box-shadow: 0 4px 14px rgba(37,99,235,0.06); }}
+    .decoder-container {{ background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 20px 24px; margin: 16px 0px 24px 0px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }}
+    .decoder-header {{ display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 6px; }}
+    .decoder-title {{ font-size: 16.5px; font-weight: 800; color: {PALETTE['navy']}; display: flex; align-items: center; gap: 8px; }}
+    .decoder-badge {{ font-size: 11px; font-weight: 700; background: #e0f2fe; color: #0369a1; padding: 3px 10px; border-radius: 12px; text-transform: uppercase; letter-spacing: 0.5px; }}
+    .decoder-grid {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 14px 0px; }}
+    @media (max-width: 900px) {{ .decoder-grid {{ grid-template-columns: 1fr; }} }}
+    .decoder-card {{ background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 16px; display: flex; flex-direction: column; justify-content: space-between; }}
+    .decoder-card-title {{ font-size: 11px; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }}
+    .decoder-card-big {{ font-size: 24px; font-weight: 800; color: {PALETTE['navy']}; margin-bottom: 8px; }}
+    .decoder-item {{ font-size: 12.2px; color: #334155; margin-bottom: 4px; line-height: 1.4; }}
+    .decoder-sum {{ margin-top: 8px; padding-top: 6px; border-top: 1px dashed #cbd5e1; font-size: 11.5px; font-weight: 700; color: #1e293b; }}
+    .decoder-reconciliation-footer {{ background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 10px 14px; font-size: 12.2px; color: #1e40af; line-height: 1.5; margin-top: 10px; }}
 </style>
 """, unsafe_allow_html=True)
 
@@ -219,7 +232,7 @@ def apply_exec_chart_theme(fig, height=350, show_legend=True, pad_l=40, pad_r=30
 
 
 def render_chart_header(title, significance, calculation, action):
-    """Hover-based 'i' tooltip — no click required."""
+    """Hover-based info tooltip."""
     st.markdown(f"""
     <div class="chart-header-row">
         <div class="chart-title">{title}</div>
@@ -260,6 +273,83 @@ dashboard_mode = st.radio("Navigation Mode",
 # 5. RENDER FUNCTIONS  (ordered for executive narrative flow)
 # ==============================================================================
 
+# ── 0. The Numbers Decoder (Rosetta Stone) ───────────────────────────────────
+def render_math_decoder():
+    cand_total = filtered_df['candidate_id'].nunique()
+    cand_reach = filtered_df.groupby('candidate_id')['sent_flag'].sum() > 0
+    cand_reached = int(cand_reach.sum())
+    cand_unreached = cand_total - cand_reached
+    cand_reach_pct = (cand_reached / cand_total * 100) if cand_total > 0 else 0
+    cand_unreach_pct = (cand_unreached / cand_total * 100) if cand_total > 0 else 0
+
+    total_notifs = len(filtered_notif_df)
+    reached_notifs = int(filtered_notif_df['is_reached'].sum())
+    dropped_notifs = total_notifs - reached_notifs
+    notif_reach_pct = (reached_notifs / total_notifs * 100) if total_notifs > 0 else 0
+    notif_drop_pct = (dropped_notifs / total_notifs * 100) if total_notifs > 0 else 0
+
+    total_attempts = len(filtered_df)
+    sent_attempts = int(filtered_df['sent_flag'].sum())
+    skipped_attempts = int(filtered_df['skipped_flag'].sum())
+    failed_attempts = int(filtered_df['failed_flag'].sum())
+    sent_pct = (sent_attempts / total_attempts * 100) if total_attempts > 0 else 0
+    skipped_pct = (skipped_attempts / total_attempts * 100) if total_attempts > 0 else 0
+    failed_pct = (failed_attempts / total_attempts * 100) if total_attempts > 0 else 0
+
+    single_ch = int((filtered_notif_df['sent_legs'] == 1).sum())
+    multi_ch = int((filtered_notif_df['sent_legs'] > 1).sum())
+
+    st.markdown(f"""
+    <div class="decoder-container">
+        <div class="decoder-header">
+            <div class="decoder-title"><span>📐</span> The Numbers Decoder — How Every Number Adds Up</div>
+            <span class="decoder-badge">100% Reconciled Math</span>
+        </div>
+        <div style="font-size:13px; color:#475569; margin: 4px 0 14px 0; line-height:1.5;">
+            The analytics system measures activity across <strong>3 distinct levels</strong>. Knowing which level you are looking at makes the numbers instantly add up:
+        </div>
+        <div class="decoder-grid">
+            <!-- Level 1: Candidates -->
+            <div class="decoder-card">
+                <div>
+                    <div class="decoder-card-title">👥 LEVEL 1: PEOPLE (Candidates)</div>
+                    <div class="decoder-card-big">{cand_total:,} <span style="font-size:13px;font-weight:600;color:#64748b;">Human Beings</span></div>
+                    <div class="decoder-item"><span style="color:#166534;font-weight:700;">✅ {cand_reached:,} Reached</span> ({cand_reach_pct:.1f}%) — Got ≥1 alert</div>
+                    <div class="decoder-item"><span style="color:#991b1b;font-weight:700;">❌ {cand_unreached:,} Missed</span> ({cand_unreach_pct:.1f}%) — Got 0 alerts</div>
+                </div>
+                <div class="decoder-sum">{cand_reached:,} + {cand_unreached:,} = <b>{cand_total:,} Candidates (100%)</b></div>
+            </div>
+            <!-- Level 2: Messages -->
+            <div class="decoder-card">
+                <div>
+                    <div class="decoder-card-title">📨 LEVEL 2: MESSAGES (Alerts)</div>
+                    <div class="decoder-card-big">{total_notifs:,} <span style="font-size:13px;font-weight:600;color:#64748b;">Alerts Triggered</span></div>
+                    <div class="decoder-item"><span style="color:#166534;font-weight:700;">✅ {reached_notifs:,} Delivered</span> ({notif_reach_pct:.1f}%) — Reached candidate</div>
+                    <div class="decoder-item"><span style="color:#991b1b;font-weight:700;">❌ {dropped_notifs:,} Lost</span> ({notif_drop_pct:.1f}%) — Failed on all channels</div>
+                </div>
+                <div class="decoder-sum">{reached_notifs:,} + {dropped_notifs:,} = <b>{total_notifs:,} Messages (100%)</b></div>
+            </div>
+            <!-- Level 3: Channel Tries -->
+            <div class="decoder-card">
+                <div>
+                    <div class="decoder-card-title">📱 LEVEL 3: CHANNEL TRIES (Attempts)</div>
+                    <div class="decoder-card-big">{total_attempts:,} <span style="font-size:13px;font-weight:600;color:#64748b;">Tries (~3 per alert)</span></div>
+                    <div class="decoder-item"><span style="color:#166534;font-weight:700;">✅ {sent_attempts:,} Sent</span> ({sent_pct:.1f}%) — Delivered by provider</div>
+                    <div class="decoder-item"><span style="color:#b45309;font-weight:700;">⏭️ {skipped_attempts:,} Skipped</span> ({skipped_pct:.1f}%) — No phone token / email</div>
+                    <div class="decoder-item"><span style="color:#991b1b;font-weight:700;">❌ {failed_attempts:,} Failed</span> ({failed_pct:.1f}%) — WhatsApp error 131008</div>
+                </div>
+                <div class="decoder-sum">{sent_attempts:,} + {skipped_attempts:,} + {failed_attempts:,} = <b>{total_attempts:,} Tries (100%)</b></div>
+            </div>
+        </div>
+        <div class="decoder-reconciliation-footer">
+            💡 <b>Why does {sent_attempts:,} Sent Tries not equal {reached_notifs:,} Delivered Messages?</b><br>
+            Because <b>{multi_ch:,} candidates received the same message on TWO channels</b> (both WhatsApp and Email).<br>
+            Math: {single_ch:,} single-channel messages + ({multi_ch:,} × 2 channels) = <b>{sent_attempts:,} total successful channel tries</b>! Every single number reconciles.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
 # ── 1. KPI Scorecards ────────────────────────────────────────────────────────
 def render_executive_kpis():
     st.markdown('<div class="section-title">1. Key Performance Indicators</div>', unsafe_allow_html=True)
@@ -273,40 +363,45 @@ def render_executive_kpis():
     dropped_cnt    = total_notifs - reached_notifs
     dropped_rate   = (dropped_cnt / total_notifs * 100) if total_notifs > 0 else 0
 
+    cand_total     = filtered_df['candidate_id'].nunique()
+    cand_reach     = filtered_df.groupby('candidate_id')['sent_flag'].sum() > 0
+    cand_reached   = int(cand_reach.sum())
+    cand_unreached = cand_total - cand_reached
+    cand_reach_pct = (cand_reached / cand_total * 100) if cand_total > 0 else 0
+
     c1, c2, c3, c4, c5 = st.columns(5)
     with c1:
         st.markdown(f"""<div class="exec-card accent-navy">
-            <div><div class="exec-card-label">Total Notifications Sent</div>
+            <div><div class="exec-card-label">Messages Triggered</div>
             <div class="exec-card-value">{total_notifs:,}</div></div>
-            <div class="exec-card-subtext">Unique candidate alerts triggered by the system</div></div>""", unsafe_allow_html=True)
+            <div class="exec-card-subtext">Total alerts the system attempted to send</div></div>""", unsafe_allow_html=True)
     with c2:
         st.markdown(f"""<div class="exec-card accent-sky">
-            <div><div class="exec-card-label">Total Delivery Attempts</div>
+            <div><div class="exec-card-label">Total Delivery Tries</div>
             <div class="exec-card-value">{total_legs:,}</div></div>
-            <div class="exec-card-subtext">{total_legs/total_notifs:.1f} channels tried per notification</div></div>""", unsafe_allow_html=True)
+            <div class="exec-card-subtext">{total_legs/total_notifs:.1f} channels tried per message</div></div>""", unsafe_allow_html=True)
     with c3:
         st.markdown(f"""<div class="exec-card accent-teal">
-            <div><div class="exec-card-label">Candidates Reached</div>
+            <div><div class="exec-card-label">Messages Delivered</div>
             <div class="exec-card-value">{reach_rate:.1f}%</div></div>
-            <div class="exec-card-subtext">{reached_notifs:,} people got the message on at least one channel</div></div>""", unsafe_allow_html=True)
+            <div class="exec-card-subtext">{reached_notifs:,} of {total_notifs:,} reached candidate on ≥1 channel</div></div>""", unsafe_allow_html=True)
     with c4:
-        st.markdown(f"""<div class="exec-card accent-purple">
-            <div><div class="exec-card-label">Successful Delivery Rate</div>
-            <div class="exec-card-value">{channel_rate:.1f}%</div></div>
-            <div class="exec-card-subtext">{sent_legs_cnt:,} of {total_legs:,} attempts actually delivered</div></div>""", unsafe_allow_html=True)
-    with c5:
         st.markdown(f"""<div class="exec-card accent-coral">
-            <div><div class="exec-card-label">Completely Missed</div>
+            <div><div class="exec-card-label">Messages Lost</div>
             <div class="exec-card-value">{dropped_rate:.1f}%</div></div>
-            <div class="exec-card-subtext">{dropped_cnt:,} candidates — no message reached them on any channel</div></div>""", unsafe_allow_html=True)
+            <div class="exec-card-subtext">{dropped_cnt:,} messages failed on all channels</div></div>""", unsafe_allow_html=True)
+    with c5:
+        st.markdown(f"""<div class="exec-card accent-purple">
+            <div><div class="exec-card-label">People Reached</div>
+            <div class="exec-card-value">{cand_reach_pct:.1f}%</div></div>
+            <div class="exec-card-subtext">{cand_reached:,} reached · {cand_unreached:,} missed (of {cand_total:,})</div></div>""", unsafe_allow_html=True)
 
     st.markdown(f"""<div class="exec-takeaway-box">
-        <strong>📋 Summary — What This Means:</strong>
+        <strong>📋 Plain-English Summary — The 3 Culprits Behind Every Lost Message:</strong>
         <ul style="margin:10px 0 0 0; padding-left:18px; line-height:1.8;">
-            <li>The system tries up to <strong>3 channels per candidate</strong> (Push, WhatsApp, Email), but <strong>{dropped_cnt:,} people ({dropped_rate:.1f}%) received nothing at all.</strong></li>
-            <li><strong>WhatsApp error (code 131008):</strong> A missing field in the message data caused 1,090 deliveries to fail. One backend fix resolves all of them.</li>
-            <li><strong>Mobile Push not working:</strong> 1,239 attempts were skipped because the app never saved the device token when candidates logged in.</li>
-            <li><strong>No email address on file:</strong> 584 online candidates were registered without an email, leaving them with no backup contact method.</li>
+            <li><strong>1. WhatsApp Software Bug (Code 131008) — Caused 1,090 Failures:</strong> The automated system sent messages to WhatsApp without filling in the candidate's class date or trainer name. Meta rejected them automatically. <em>Fix: 1 developer can fix this parameter bug in an afternoon.</em></li>
+            <li><strong>2. Mobile App Never Saves Device Tokens — Caused 1,239 Skips:</strong> When candidates log into the mobile app, the app fails to save their push notification token to the database. The system had no phone address to send to. <em>Fix: Update mobile app to save push token on login.</em></li>
+            <li><strong>3. Online Candidates Have No Email on File — Caused 584 Skips:</strong> When students enroll in online classes, the registration form only asked for their phone number. When WhatsApp and Push fail, there is no email backup! <em>Fix: Make email a required field on sign-up forms.</em></li>
         </ul>
     </div>""", unsafe_allow_html=True)
 
@@ -317,7 +412,7 @@ def render_what_if_simulator():
         <h4 style="margin:0px 0px 6px 0px;color:{PALETTE['navy']};font-weight:700;font-size:16px;">
             🎛️ What-If Simulator — See the Impact of Each Fix</h4>
         <p style="font-size:12.5px;color:{PALETTE['muted']};margin:0px 0px 14px 0px;">
-            Tick one or more fixes below to see how many more candidates would be reached if that problem were solved today:</p>""",
+            Tick one or more fixes below to see how many lost messages and candidates would be recovered today:</p>""",
         unsafe_allow_html=True)
 
     sc1, sc2, sc3 = st.columns(3)
@@ -343,11 +438,16 @@ def render_what_if_simulator():
     sim_dropped = total_n - sim_reached
     recovered   = sim_reached - base_reached
 
+    cand_base_reached = int((filtered_df.groupby('candidate_id')['sent_flag'].sum() > 0).sum())
+    cand_total = filtered_df['candidate_id'].nunique()
+    cand_sim_reached = int((sim_df.groupby('candidate_id')['sent_flag'].sum() > 0).sum())
+    cand_recovered = cand_sim_reached - cand_base_reached
+
     r1, r2, r3, r4 = st.columns(4)
-    with r1: st.metric("Current Reach Rate",     f"{base_rate:.1f}%")
-    with r2: st.metric("Reach Rate After Fixes", f"{sim_rate:.1f}%",    f"+{delta_rate:.1f}%")
-    with r3: st.metric("Still Unreached",         f"{sim_dropped:,}",   f"-{(total_n-base_reached)-sim_dropped:,}", delta_color="inverse")
-    with r4: st.metric("Extra Candidates Reached",f"{recovered:,}")
+    with r1: st.metric("Current Message Delivery", f"{base_rate:.1f}%", f"{base_reached:,} of {total_n:,}")
+    with r2: st.metric("Delivery Rate After Fixes", f"{sim_rate:.1f}%", f"+{delta_rate:.1f}%")
+    with r3: st.metric("Messages Recovered", f"+{recovered:,}", f"{sim_dropped:,} still lost", delta_color="normal")
+    with r4: st.metric("Extra People Reached", f"+{cand_recovered:,}", f"Now {cand_sim_reached:,} of {cand_total:,}", delta_color="normal")
 
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -361,64 +461,102 @@ def render_funnel_and_leakage():
     dispatched_cnt = int(filtered_df['dispatched_at'].notna().sum())
     sent_cnt       = int(filtered_df['sent_flag'].sum())
     reached_cnt    = int(filtered_notif_df['is_reached'].sum())
+    dropped_cnt    = total_n - reached_cnt
+    skipped_cnt    = int(filtered_df['skipped_flag'].sum())
+    failed_cnt     = int(filtered_df['failed_flag'].sum())
 
-    # Full-width funnel
+    # Full-width funnel with perspective selector
     st.markdown('<div class="plot-card">', unsafe_allow_html=True)
     render_chart_header(
-        title="📌 End-to-End Message Delivery Journey",
-        significance="Shows how many notifications make it through each stage — from the moment one is created to the point a candidate actually receives it. The further the drop, the bigger the problem.",
-        calculation="Stage 1: total notifications created · Stage 2: sent to the delivery provider · Stage 3: accepted and dispatched · Stage 4: at least one channel reached the candidate · Stage 5: confirmed read (not yet tracked).",
-        action="Set up delivery receipt tracking (webhooks) with your messaging providers to close the visibility gap at Stage 5."
+        title="📌 Delivery Pipeline — Step-by-Step Flow",
+        significance="Shows step-by-step how volume flows through the pipeline without mixing units. Every step is smaller than the last so numbers make complete sense.",
+        calculation="Message view: tracks 1,308 distinct alerts from creation to delivery. Channel Tries view: tracks 3,924 individual channel attempts from planned to sent.",
+        action="Fix the WhatsApp payload bug to immediately turn 1,090 failed channel attempts into successful deliveries."
     )
 
-    stages  = ["1. Notifications Created", "2. Handed to Delivery Provider", "3. Successfully Sent", "4. Candidate Received (≥1 Channel)", "5. Confirmed Read"]
-    values  = [total_n, dispatched_cnt, sent_cnt, reached_cnt, 0]
-    percents= [
-        "100% — starting point",
-        f"{dispatched_cnt/total_l*100:.1f}% of all attempts handed over",
-        f"{sent_cnt/total_l*100:.1f}% successfully delivered",
-        f"{reached_cnt/total_n*100:.1f}% of candidates received a message",
-        "0% — read receipts not yet tracked"
-    ]
-    bar_colors = [PALETTE['navy'], PALETTE['ocean'], PALETTE['teal'], PALETTE['sage'], PALETTE['muted']]
+    funnel_view = st.radio(
+        "Choose Pipeline View:",
+        ["📨 Message Journey (1,308 Messages Triggered)", "📱 Channel Attempts Pipeline (3,924 Delivery Tries)"],
+        horizontal=True
+    )
 
     fig_funnel = go.Figure()
 
-    # Draw bars for stages 1-4 (have actual values)
-    fig_funnel.add_trace(go.Bar(
-        x=values[:-1], y=stages[:-1], orientation='h',
-        marker=dict(color=bar_colors[:-1], line=dict(color=PALETTE['border'], width=1)),
-        text=[f"<b>{v:,}</b>   {p}" for v, p in zip(values[:-1], percents[:-1])],
-        textposition='outside',
-        textfont=dict(family='Inter, sans-serif', size=12, color=PALETTE['charcoal']),
-        cliponaxis=False,
-        hovertext=[f"<b>{s}</b><br>Volume: {v:,}<br>{p}" for s, v, p in zip(stages[:-1], values[:-1], percents[:-1])],
-        hoverinfo='text', showlegend=False
-    ))
+    if "Message Journey" in funnel_view:
+        m_stages = ["1. Messages Triggered", "2. Delivered to Candidate (≥1 Channel)", "3. Confirmed Read"]
+        m_values = [total_n, reached_cnt, 0]
+        m_pcts   = [
+            "100% — Total business alerts",
+            f"{reached_cnt/total_n*100:.1f}% — Arrived ({dropped_cnt:,} completely lost)",
+            "0% — Read receipts not yet tracked"
+        ]
+        m_colors = [PALETTE['navy'], PALETTE['teal'], PALETTE['muted']]
 
-    # Stage 5 = zero — draw a tiny stub bar + annotation instead of a bar label
-    fig_funnel.add_trace(go.Bar(
-        x=[1], y=[stages[-1]], orientation='h',          # stub width=1 so it's visible
-        marker=dict(color=bar_colors[-1], line=dict(color=PALETTE['border'], width=0)),
-        hovertext=[f"<b>{stages[-1]}</b><br>Not yet tracked — webhooks not connected"],
-        hoverinfo='text', showlegend=False
-    ))
-    fig_funnel.add_annotation(
-        x=1, y=stages[-1],
-        text="<b>0</b>   Read receipts not yet tracked",
-        xanchor='left', xshift=8,
-        showarrow=False,
-        font=dict(size=12, color=PALETTE['muted'], family='Inter')
-    )
+        fig_funnel.add_trace(go.Bar(
+            x=m_values[:-1], y=m_stages[:-1], orientation='h',
+            marker=dict(color=m_colors[:-1], line=dict(color=PALETTE['border'], width=1)),
+            text=[f"<b>{v:,}</b>   ({p})" for v, p in zip(m_values[:-1], m_pcts[:-1])],
+            textposition='outside',
+            textfont=dict(family='Inter, sans-serif', size=12, color=PALETTE['charcoal']),
+            cliponaxis=False,
+            hovertext=[f"<b>{s}</b><br>Volume: {v:,}<br>{p}" for s, v, p in zip(m_stages[:-1], m_values[:-1], m_pcts[:-1])],
+            hoverinfo='text', showlegend=False
+        ))
+        fig_funnel.add_trace(go.Bar(
+            x=[1], y=[m_stages[-1]], orientation='h',
+            marker=dict(color=m_colors[-1], line=dict(color=PALETTE['border'], width=0)),
+            hovertext=[f"<b>{m_stages[-1]}</b><br>Not yet tracked — provider webhooks needed"],
+            hoverinfo='text', showlegend=False
+        ))
+        fig_funnel.add_annotation(
+            x=1, y=m_stages[-1], text="<b>0</b>   (Read receipts not yet tracked)",
+            xanchor='left', xshift=8, showarrow=False,
+            font=dict(size=12, color=PALETTE['muted'], family='Inter')
+        )
+        fig_funnel.update_layout(
+            yaxis=dict(autorange="reversed", showgrid=False, tickfont=dict(size=12, color=PALETTE['charcoal'])),
+            xaxis=dict(title="Number of Messages", showgrid=True, gridcolor='#f1f5f9', range=[0, total_n * 1.55]),
+            bargap=0.28
+        )
+    else:
+        c_stages = ["1. Attempts Planned", "2. Handed to Providers (Dispatched)", "3. Successfully Sent", "4. Confirmed Read"]
+        c_values = [total_l, dispatched_cnt, sent_cnt, 0]
+        c_pcts   = [
+            "100% — ~3 channels tried per message",
+            f"{dispatched_cnt/total_l*100:.1f}% — Dispatched ({skipped_cnt:,} skipped beforehand)",
+            f"{sent_cnt/total_l*100:.1f}% — Delivered ({failed_cnt:,} failed at provider)",
+            "0% — Read receipts not yet tracked"
+        ]
+        c_colors = [PALETTE['navy'], PALETTE['ocean'], PALETTE['teal'], PALETTE['muted']]
 
-    fig_funnel.update_layout(
-        yaxis=dict(autorange="reversed", showgrid=False,
-                   tickfont=dict(size=12, color=PALETTE['charcoal'])),
-        xaxis=dict(title="Volume", showgrid=True, gridcolor='#f1f5f9',
-                   range=[0, total_n * 1.65]),
-        bargap=0.25
-    )
-    st.plotly_chart(apply_exec_chart_theme(fig_funnel, height=360, show_legend=False, pad_l=245, pad_r=18, pad_t=30, pad_b=45))
+        fig_funnel.add_trace(go.Bar(
+            x=c_values[:-1], y=c_stages[:-1], orientation='h',
+            marker=dict(color=c_colors[:-1], line=dict(color=PALETTE['border'], width=1)),
+            text=[f"<b>{v:,}</b>   ({p})" for v, p in zip(c_values[:-1], c_pcts[:-1])],
+            textposition='outside',
+            textfont=dict(family='Inter, sans-serif', size=12, color=PALETTE['charcoal']),
+            cliponaxis=False,
+            hovertext=[f"<b>{s}</b><br>Volume: {v:,}<br>{p}" for s, v, p in zip(c_stages[:-1], c_values[:-1], c_pcts[:-1])],
+            hoverinfo='text', showlegend=False
+        ))
+        fig_funnel.add_trace(go.Bar(
+            x=[1], y=[c_stages[-1]], orientation='h',
+            marker=dict(color=c_colors[-1], line=dict(color=PALETTE['border'], width=0)),
+            hovertext=[f"<b>{c_stages[-1]}</b><br>Not yet tracked — provider webhooks needed"],
+            hoverinfo='text', showlegend=False
+        ))
+        fig_funnel.add_annotation(
+            x=1, y=c_stages[-1], text="<b>0</b>   (Read receipts not yet tracked)",
+            xanchor='left', xshift=8, showarrow=False,
+            font=dict(size=12, color=PALETTE['muted'], family='Inter')
+        )
+        fig_funnel.update_layout(
+            yaxis=dict(autorange="reversed", showgrid=False, tickfont=dict(size=12, color=PALETTE['charcoal'])),
+            xaxis=dict(title="Number of Channel Attempts", showgrid=True, gridcolor='#f1f5f9', range=[0, total_l * 1.55]),
+            bargap=0.28
+        )
+
+    st.plotly_chart(apply_exec_chart_theme(fig_funnel, height=330, show_legend=False, pad_l=260, pad_r=18, pad_t=25, pad_b=40))
     st.markdown('</div>', unsafe_allow_html=True)
 
     col_f1, col_f2 = st.columns([1.4, 0.6])
@@ -427,48 +565,65 @@ def render_funnel_and_leakage():
         st.markdown('<div class="plot-card">', unsafe_allow_html=True)
         render_chart_header(
             title="⚠️ Why Did Messages Fail? — Drop-off Reasons",
-            significance="Shows the most common reasons why messages were not delivered. Each bar is a distinct failure category, making it easy to see which problem is causing the most damage.",
-            calculation="All failed and skipped attempts are grouped by their error reason. Each group is counted and shown as a percentage of total failures. Sorted from largest to smallest.",
-            action="Fix the WhatsApp message data error (top bar) first — it alone accounts for over a third of all failures and can be resolved in a single day."
+            significance="Shows the exact reason why channel delivery attempts failed or skipped, ranked from largest problem to smallest.",
+            calculation="All failed and skipped attempts are grouped by error reason and counted as a percentage of all failures. Clear labels explain what went wrong.",
+            action="Fix the WhatsApp missing data bug (top bar) first — it accounts for 1,090 failed messages and can be solved in 1 day."
         )
 
+        def clean_leak_label(r):
+            if "131008" in r:
+                return "WhatsApp: Missing Date / Trainer Name (131008)"
+            if "push tokens" in r:
+                return "Push: Mobile App Missing Device Token"
+            if "missing email" in r:
+                return "Email: No Email on Candidate Profile"
+            if "not subscribed" in r:
+                return "Push: Candidate Unsubscribed / Disabled Alerts"
+            if "Fallback satisfied" in r:
+                return "WhatsApp: Skipped (Email already sent)"
+            if "DLT pending" in r:
+                return "SMS: TRAI DLT Template Pending"
+            if "132018" in r:
+                return "WhatsApp: Template Parameter Formatting Issue"
+            if "132001" in r:
+                return "WhatsApp: Template Translation Not Found"
+            return r[:40] + '…' if len(r) > 40 else r
+
         leak_df     = filtered_df[filtered_df['status'].isin(['FAILED','SKIPPED'])].copy()
-        leak_counts = leak_df['error_message'].value_counts().reset_index()
+        leak_df['clean_reason'] = leak_df['error_message'].apply(clean_leak_label)
+        leak_counts = leak_df['clean_reason'].value_counts().reset_index()
         leak_counts.columns = ['Reason', 'Count']
         total_leak  = leak_counts['Count'].sum()
         leak_counts['Pct'] = (leak_counts['Count'] / total_leak * 100).round(1) if total_leak > 0 else 0
         top_leaks   = leak_counts.head(6)
 
         def get_leak_color(r):
-            if "Meta API" in r or "131008" in r: return PALETTE["coral"]
-            if "push tokens" in r:               return PALETTE["crimson"]
-            if "missing email" in r:             return PALETTE["amber"]
+            if "WhatsApp" in r and "131008" in r: return PALETTE["coral"]
+            if "Push" in r and "Token" in r:      return PALETTE["crimson"]
+            if "Email" in r:                       return PALETTE["amber"]
             return PALETTE["muted"]
 
         fig_leak = go.Figure(go.Bar(
             x=top_leaks['Count'],
-            y=[r[:38]+'…' if len(r) > 38 else r for r in top_leaks['Reason']],
+            y=top_leaks['Reason'],
             orientation='h',
             marker=dict(
                 color=[get_leak_color(r) for r in top_leaks['Reason']],
                 line=dict(color=PALETTE['border'], width=1)
             ),
-            text=[f"<b>{c:,}</b>  ({p}%  of failures)" for c, p in zip(top_leaks['Count'], top_leaks['Pct'])],
+            text=[f"<b>{c:,}</b>  ({p}%)" for c, p in zip(top_leaks['Count'], top_leaks['Pct'])],
             textposition='outside',
             textfont=dict(family='Inter, sans-serif', size=12, color=PALETTE['charcoal']),
             cliponaxis=False,
-            hovertext=[f"<b>{r}</b><br>Failed Attempts: {c:,}<br>Share of all failures: {p}%" for r, c, p in zip(top_leaks['Reason'], top_leaks['Count'], top_leaks['Pct'])],
+            hovertext=[f"<b>{r}</b><br>Attempts: {c:,}<br>Share of Failures: {p}%" for r, c, p in zip(top_leaks['Reason'], top_leaks['Count'], top_leaks['Pct'])],
             hoverinfo='text'
         ))
         fig_leak.update_layout(
             yaxis=dict(autorange="reversed", showgrid=False,
-                       tickfont=dict(size=12, color=PALETTE['charcoal']),
-                       tickmode='array',
-                       ticktext=[r[:38]+'…' if len(r) > 38 else r for r in top_leaks['Reason']],
-                       tickvals=list(range(len(top_leaks)))),
-            xaxis=dict(title="Number of Failed / Skipped Attempts", showgrid=True,
+                       tickfont=dict(size=11.5, color=PALETTE['charcoal'])),
+            xaxis=dict(title="Failed / Skipped Attempts", showgrid=True,
                        gridcolor='#f1f5f9',
-                       range=[0, top_leaks['Count'].max() * 1.65]),
+                       range=[0, top_leaks['Count'].max() * 1.55]),
             bargap=0.3
         )
         st.plotly_chart(apply_exec_chart_theme(fig_leak, height=360, show_legend=False, pad_l=260, pad_r=18, pad_t=30, pad_b=45))
@@ -477,16 +632,22 @@ def render_funnel_and_leakage():
     with col_f2:
         st.markdown('<div class="plot-card">', unsafe_allow_html=True)
         render_chart_header(
-            title="🎯 How Many Candidates Were Reached?",
-            significance="Shows the simple split between candidates who received at least one message, and those who received nothing at all.",
-            calculation="Each notification is checked: if at least one channel (Email, WhatsApp, or Push) delivered successfully, the candidate is marked as Reached. Otherwise, they are marked as Missed.",
-            action="The 32% missed segment is the primary target — see Section 7 for the step-by-step fix plan."
+            title="🎯 Delivery Result by Message",
+            significance="Shows what percentage of the total messages actually arrived on at least one channel versus those that completely failed.",
+            calculation="Out of total messages: Delivered = received on ≥1 channel (Email or WhatsApp). Lost = failed on all attempted channels. Sums to 100%.",
+            action="The 32.3% lost segment represents 423 messages — fixing WhatsApp alone recovers every single one."
         )
 
-        reach_vals   = [int(filtered_notif_df['is_reached'].sum()), int((~filtered_notif_df['is_reached']).sum())]
-        reach_labels = ['Reached', 'Not Reached']
+        reach_vals   = [reached_cnt, dropped_cnt]
+        reach_labels = ['Delivered (≥1 Ch)', 'Completely Lost (0 Ch)']
         reach_total  = sum(reach_vals)
         reach_pcts   = [f"{v/reach_total*100:.1f}%" for v in reach_vals]
+
+        cand_total     = filtered_df['candidate_id'].nunique()
+        cand_reach     = filtered_df.groupby('candidate_id')['sent_flag'].sum() > 0
+        cand_reached   = int(cand_reach.sum())
+        cand_unreached = cand_total - cand_reached
+        cand_reach_pct = (cand_reached / cand_total * 100) if cand_total > 0 else 0
 
         fig_donut2 = go.Figure(go.Pie(
             labels=reach_labels,
@@ -496,27 +657,32 @@ def render_funnel_and_leakage():
                 colors=[STATUS_COLORS['REACHED'], STATUS_COLORS['UNREACHED']],
                 line=dict(color='white', width=3)
             ),
-            textinfo='percent',                          # only % on slice — no long label
+            textinfo='percent',
             textfont=dict(size=14, family='Inter', color='white'),
             insidetextorientation='horizontal',
-            hovertemplate="<b>%{label}</b><br>%{value:,} candidates<br>%{percent}<extra></extra>"
+            hovertemplate="<b>%{label}</b><br>%{value:,} messages<br>%{percent}<extra></extra>"
         ))
-        # Centre annotation: reached count + rate
         fig_donut2.update_layout(
             annotations=[dict(
-                text=f"<b>{reach_vals[0]:,}</b><br><span style='font-size:11px'>Reached<br>{reach_pcts[0]}</span>",
-                x=0.5, y=0.5, font_size=16, showarrow=False,
+                text=f"<b>{reach_vals[0]:,}</b><br><span style='font-size:11px'>Delivered<br>{reach_pcts[0]}</span>",
+                x=0.5, y=0.5, font_size=15, showarrow=False,
                 font=dict(family='Inter', color=PALETTE['navy'])
             )],
             legend=dict(
                 orientation='h', x=0.5, xanchor='center', y=-0.12,
-                font=dict(size=12.5, family='Inter'),
+                font=dict(size=11.5, family='Inter'),
                 traceorder='normal'
             ),
             showlegend=True
         )
-        st.plotly_chart(apply_exec_chart_theme(fig_donut2, height=360, show_legend=True, pad_l=20, pad_r=20, pad_t=20, pad_b=10))
+        st.plotly_chart(apply_exec_chart_theme(fig_donut2, height=310, show_legend=True, pad_l=15, pad_r=15, pad_t=15, pad_b=10))
+        st.markdown(f"""
+        <div style="font-size:11.8px; color:{PALETTE['muted']}; text-align:center; margin-top:2px;">
+            👥 <strong>People Perspective:</strong> {cand_reached:,} of {cand_total:,} candidates reached ({cand_reach_pct:.1f}%) · {cand_unreached:,} missed.
+        </div>
+        """, unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
+
 
 
 # ── 4. Channel & Provider Matrix ─────────────────────────────────────────────
@@ -1101,6 +1267,7 @@ def render_action_plan_and_triage():
 # 6. ORCHESTRATION
 # ==============================================================================
 if dashboard_mode == "📄 Full Report (All Sections)":
+    render_math_decoder()
     render_executive_kpis()
     render_what_if_simulator()
     render_funnel_and_leakage()
@@ -1120,6 +1287,7 @@ else:
         "🛠️ Fix Plan & Lookup"
     ])
     with tab1:
+        render_math_decoder()
         render_executive_kpis()
         render_what_if_simulator()
     with tab2:

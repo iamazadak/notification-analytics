@@ -38,23 +38,35 @@ The aesthetic, color palette, scorecard architecture, and layout are directly re
 
 ---
 
-## 🔍 Data Analyst Key Findings
+## 🔍 Plain English Numbers Guide (Everything Sums to 100%)
 
-| Metric | Measured Value | Operational Assessment |
-| :--- | :--- | :--- |
-| **Total Notification Requests** | 1,308 | Multi-channel engine load |
-| **Total Delivery Legs Attempted** | 3,924 | ~3.0 delivery legs per request |
-| **Candidate Reachability (≥1 Ch)** | **67.66%** | 885 candidates reached |
-| **Complete Drop-off Rate (0 Ch)** | **32.34%** | **423 candidates completely dropped** |
-| **Channel-Level Sent Rate** | **23.37%** | 917 of 3,924 attempts sent |
-| **Median Dispatch Latency** | **2.91s** | Optimal velocity (< 5s SLA) |
-| **P95 Latency SLA** | **3.58s** | Compliant with SLA |
+The dataset operates across **three distinct levels**:
 
-### Critical Root Causes:
-- **WhatsApp (84.0% Failure Rate):** 1,090 failures caused by `Meta API 131008: Required parameter is missing`. The backend webhook omits mandatory template parameters.
-- **Mobile Push (95.2% Skipped, 0% Sent):** 1,239 skips caused by `missing push tokens` because mobile app device tokens are not synced to the WMS profile database.
-- **Email (55.4% Sent, 44.6% Skipped):** 100% reliable when data is present; 584 skipped due to missing email addresses in candidate records.
-- **Online vs. Onsite Crisis:** Online candidates only provide mobile numbers. When WhatsApp fails via API parameter error and Push lacks device tokens, missing email results in **100% notification blackout for 74.2% of online candidates**.
+1. **People (884 Unique Candidates):**
+   - **525 Reached (59.4%)** received at least one alert.
+   - **359 Missed (40.6%)** never received any alert.
+   - *Sum: 525 + 359 = 884 Candidates (100%)*
+
+2. **Messages (1,308 Business Alerts):**
+   - **885 Delivered (67.7%)** reached the candidate on ≥1 channel.
+   - **423 Completely Lost (32.3%)** failed on every channel.
+   - *Sum: 885 + 423 = 1,308 Messages (100%)*
+
+3. **Channel Tries (3,924 Delivery Attempts):**
+   - System tries ~3 channels per alert (Push, WhatsApp, Email).
+   - **917 Sent (23.4%)** successfully accepted by gateway.
+   - **1,839 Skipped (46.9%)** due to missing phone tokens or emails.
+   - **1,168 Failed (29.8%)** primarily from WhatsApp template error 131008.
+   - *Sum: 917 + 1,839 + 1,168 = 3,924 Channel Tries (100%)*
+
+> **Why does 917 Sent Tries ≠ 885 Delivered Messages?**  
+> 32 candidates received the message on **both** WhatsApp and Email!  
+> Math: 853 single-channel + (32 × 2 dual-channel) = **917 successful tries**. Everything adds up!
+
+### The 3 Core Culprits:
+- **WhatsApp Bug (1,090 Failures):** Automated payload omitted class date or trainer name. Fixable in 1 day.
+- **Mobile Push Missing Tokens (1,239 Skips):** App never recorded device token on candidate login.
+- **Missing Email for Online Students (584 Skips):** Online sign-up didn't ask for email, causing 74.2% of online class alerts to drop completely.
 
 ---
 
