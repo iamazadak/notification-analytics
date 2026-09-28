@@ -39,21 +39,21 @@ PALETTE = {
     "text_pill_blue": "#1e40af"
 }
 
-# ── Status: muted, dark tones — consistent everywhere ──
+# ── Status Colors: Universally recognized, high-contrast traffic-light semantics ──
 STATUS_COLORS = {
-    "SENT":      "#1f9a89",   # teal        (original palette — calm, professional green)
-    "FAILED":    "#c45f64",   # crimson     (original palette — darker, not neon red)
-    "SKIPPED":   "#cda36f",   # amber       (original palette — warm ochre)
-    "REACHED":   "#1f9a89",   # teal        (same as SENT)
-    "UNREACHED": "#c45f64",   # crimson     (same as FAILED)
+    "SENT":      "#10b981",   # Emerald Green  (clear, modern success green)
+    "SKIPPED":   "#f59e0b",   # Golden Amber   (warm, clear warning for skipped)
+    "FAILED":    "#ef4444",   # Crimson Red    (high-visibility alert red for failures)
+    "REACHED":   "#10b981",   # Emerald Green  (same as SENT)
+    "UNREACHED": "#ef4444",   # Crimson Red    (same as FAILED)
 }
 
-# ── Channels: muted, brand-adjacent, distinct from status and each other ──
+# ── Channel Colors: Distinct brand-aligned colors for each communication channel ──
 CHANNEL_COLORS = {
-    "email":     "#2c79c5",   # ocean blue      (original palette ocean)
-    "whatsapp":  "#3d7a5e",   # dark sage green  (distinct from teal/SENT)
-    "push":      "#7e519e",   # muted purple     (original palette)
-    "sms":       "#a06040",   # burnt sienna     (dark earthy orange, distinct from amber/coral)
+    "email":     "#2563eb",   # Royal Blue     (📧 Email — professional communication blue)
+    "whatsapp":  "#16a34a",   # Forest Green   (💬 WhatsApp — crisp brand green)
+    "push":      "#8b5cf6",   # Modern Purple  (📱 Mobile Push — vibrant app purple)
+    "sms":       "#f97316",   # Telecom Orange (📟 SMS — distinct carrier orange)
 }
 
 st.markdown(f"""
@@ -314,8 +314,8 @@ def render_math_decoder():
                 <div>
                     <div class="decoder-card-title">👥 LEVEL 1: PEOPLE (Candidates)</div>
                     <div class="decoder-card-big">{cand_total:,} <span style="font-size:13px;font-weight:600;color:#64748b;">Human Beings</span></div>
-                    <div class="decoder-item"><span style="color:#166534;font-weight:700;">✅ {cand_reached:,} Reached</span> ({cand_reach_pct:.1f}%) — Got ≥1 alert</div>
-                    <div class="decoder-item"><span style="color:#991b1b;font-weight:700;">❌ {cand_unreached:,} Missed</span> ({cand_unreach_pct:.1f}%) — Got 0 alerts</div>
+                    <div class="decoder-item"><span style="color:{STATUS_COLORS['SENT']};font-weight:700;">✅ {cand_reached:,} Reached</span> ({cand_reach_pct:.1f}%) — Got ≥1 alert</div>
+                    <div class="decoder-item"><span style="color:{STATUS_COLORS['FAILED']};font-weight:700;">❌ {cand_unreached:,} Missed</span> ({cand_unreach_pct:.1f}%) — Got 0 alerts</div>
                 </div>
                 <div class="decoder-sum">{cand_reached:,} + {cand_unreached:,} = <b>{cand_total:,} Candidates (100%)</b></div>
             </div>
@@ -324,8 +324,8 @@ def render_math_decoder():
                 <div>
                     <div class="decoder-card-title">📨 LEVEL 2: MESSAGES (Alerts)</div>
                     <div class="decoder-card-big">{total_notifs:,} <span style="font-size:13px;font-weight:600;color:#64748b;">Alerts Triggered</span></div>
-                    <div class="decoder-item"><span style="color:#166534;font-weight:700;">✅ {reached_notifs:,} Delivered</span> ({notif_reach_pct:.1f}%) — Reached candidate</div>
-                    <div class="decoder-item"><span style="color:#991b1b;font-weight:700;">❌ {dropped_notifs:,} Lost</span> ({notif_drop_pct:.1f}%) — Failed on all channels</div>
+                    <div class="decoder-item"><span style="color:{STATUS_COLORS['SENT']};font-weight:700;">✅ {reached_notifs:,} Delivered</span> ({notif_reach_pct:.1f}%) — Reached candidate</div>
+                    <div class="decoder-item"><span style="color:{STATUS_COLORS['FAILED']};font-weight:700;">❌ {dropped_notifs:,} Lost</span> ({notif_drop_pct:.1f}%) — Failed on all channels</div>
                 </div>
                 <div class="decoder-sum">{reached_notifs:,} + {dropped_notifs:,} = <b>{total_notifs:,} Messages (100%)</b></div>
             </div>
@@ -334,9 +334,9 @@ def render_math_decoder():
                 <div>
                     <div class="decoder-card-title">📱 LEVEL 3: CHANNEL TRIES (Attempts)</div>
                     <div class="decoder-card-big">{total_attempts:,} <span style="font-size:13px;font-weight:600;color:#64748b;">Tries (~3 per alert)</span></div>
-                    <div class="decoder-item"><span style="color:#166534;font-weight:700;">✅ {sent_attempts:,} Sent</span> ({sent_pct:.1f}%) — Delivered by provider</div>
-                    <div class="decoder-item"><span style="color:#b45309;font-weight:700;">⏭️ {skipped_attempts:,} Skipped</span> ({skipped_pct:.1f}%) — No phone token / email</div>
-                    <div class="decoder-item"><span style="color:#991b1b;font-weight:700;">❌ {failed_attempts:,} Failed</span> ({failed_pct:.1f}%) — WhatsApp error 131008</div>
+                    <div class="decoder-item"><span style="color:{STATUS_COLORS['SENT']};font-weight:700;">✅ {sent_attempts:,} Sent</span> ({sent_pct:.1f}%) — Delivered by provider</div>
+                    <div class="decoder-item"><span style="color:{STATUS_COLORS['SKIPPED']};font-weight:700;">⏭️ {skipped_attempts:,} Skipped</span> ({skipped_pct:.1f}%) — No phone token / email</div>
+                    <div class="decoder-item"><span style="color:{STATUS_COLORS['FAILED']};font-weight:700;">❌ {failed_attempts:,} Failed</span> ({failed_pct:.1f}%) — WhatsApp error 131008</div>
                 </div>
                 <div class="decoder-sum">{sent_attempts:,} + {skipped_attempts:,} + {failed_attempts:,} = <b>{total_attempts:,} Tries (100%)</b></div>
             </div>
@@ -381,19 +381,19 @@ def render_executive_kpis():
             <div class="exec-card-value">{total_legs:,}</div></div>
             <div class="exec-card-subtext">{total_legs/total_notifs:.1f} channels tried per message</div></div>""", unsafe_allow_html=True)
     with c3:
-        st.markdown(f"""<div class="exec-card accent-teal">
+        st.markdown(f"""<div class="exec-card" style="border-top:3.5px solid {STATUS_COLORS['SENT']};">
             <div><div class="exec-card-label">Messages Delivered</div>
-            <div class="exec-card-value">{reach_rate:.1f}%</div></div>
+            <div class="exec-card-value" style="color:{STATUS_COLORS['SENT']};">{reach_rate:.1f}%</div></div>
             <div class="exec-card-subtext">{reached_notifs:,} of {total_notifs:,} reached candidate on ≥1 channel</div></div>""", unsafe_allow_html=True)
     with c4:
-        st.markdown(f"""<div class="exec-card accent-coral">
+        st.markdown(f"""<div class="exec-card" style="border-top:3.5px solid {STATUS_COLORS['FAILED']};">
             <div><div class="exec-card-label">Messages Lost</div>
-            <div class="exec-card-value">{dropped_rate:.1f}%</div></div>
+            <div class="exec-card-value" style="color:{STATUS_COLORS['FAILED']};">{dropped_rate:.1f}%</div></div>
             <div class="exec-card-subtext">{dropped_cnt:,} messages failed on all channels</div></div>""", unsafe_allow_html=True)
     with c5:
-        st.markdown(f"""<div class="exec-card accent-purple">
+        st.markdown(f"""<div class="exec-card" style="border-top:3.5px solid {STATUS_COLORS['SENT']};">
             <div><div class="exec-card-label">People Reached</div>
-            <div class="exec-card-value">{cand_reach_pct:.1f}%</div></div>
+            <div class="exec-card-value" style="color:{STATUS_COLORS['SENT']};">{cand_reach_pct:.1f}%</div></div>
             <div class="exec-card-subtext">{cand_reached:,} reached · {cand_unreached:,} missed (of {cand_total:,})</div></div>""", unsafe_allow_html=True)
 
     st.markdown(f"""<div class="exec-takeaway-box">
@@ -490,7 +490,7 @@ def render_funnel_and_leakage():
             f"{reached_cnt/total_n*100:.1f}% — Arrived ({dropped_cnt:,} completely lost)",
             "0% — Read receipts not yet tracked"
         ]
-        m_colors = [PALETTE['navy'], PALETTE['teal'], PALETTE['muted']]
+        m_colors = [PALETTE['navy'], STATUS_COLORS['SENT'], PALETTE['muted']]
 
         fig_funnel.add_trace(go.Bar(
             x=m_values[:-1], y=m_stages[:-1], orientation='h',
@@ -527,7 +527,7 @@ def render_funnel_and_leakage():
             f"{sent_cnt/total_l*100:.1f}% — Delivered ({failed_cnt:,} failed at provider)",
             "0% — Read receipts not yet tracked"
         ]
-        c_colors = [PALETTE['navy'], PALETTE['ocean'], PALETTE['teal'], PALETTE['muted']]
+        c_colors = [PALETTE['navy'], PALETTE['ocean'], STATUS_COLORS['SENT'], PALETTE['muted']]
 
         fig_funnel.add_trace(go.Bar(
             x=c_values[:-1], y=c_stages[:-1], orientation='h',
@@ -556,7 +556,7 @@ def render_funnel_and_leakage():
             bargap=0.28
         )
 
-    st.plotly_chart(apply_exec_chart_theme(fig_funnel, height=330, show_legend=False, pad_l=260, pad_r=18, pad_t=25, pad_b=40))
+    st.plotly_chart(apply_exec_chart_theme(fig_funnel, height=330, show_legend=False, pad_l=260, pad_r=55, pad_t=25, pad_b=40), use_container_width=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
     col_f1, col_f2 = st.columns([1.4, 0.6])
@@ -598,9 +598,10 @@ def render_funnel_and_leakage():
         top_leaks   = leak_counts.head(6)
 
         def get_leak_color(r):
-            if "WhatsApp" in r and "131008" in r: return PALETTE["coral"]
-            if "Push" in r and "Token" in r:      return PALETTE["crimson"]
-            if "Email" in r:                       return PALETTE["amber"]
+            if "WhatsApp" in r: return CHANNEL_COLORS['whatsapp']
+            if "Push" in r:     return CHANNEL_COLORS['push']
+            if "Email" in r:    return CHANNEL_COLORS['email']
+            if "SMS" in r:      return CHANNEL_COLORS['sms']
             return PALETTE["muted"]
 
         fig_leak = go.Figure(go.Bar(
@@ -626,7 +627,15 @@ def render_funnel_and_leakage():
                        range=[0, top_leaks['Count'].max() * 1.55]),
             bargap=0.3
         )
-        st.plotly_chart(apply_exec_chart_theme(fig_leak, height=360, show_legend=False, pad_l=260, pad_r=18, pad_t=30, pad_b=45))
+        st.plotly_chart(apply_exec_chart_theme(fig_leak, height=360, show_legend=False, pad_l=270, pad_r=65, pad_t=30, pad_b=45), use_container_width=True)
+        st.markdown(f"""
+        <div style="display:flex; justify-content:center; gap:16px; font-size:11.8px; font-weight:600; margin-top:4px;">
+            <span style="color:{CHANNEL_COLORS['email']};">📧 EMAIL</span>
+            <span style="color:{CHANNEL_COLORS['whatsapp']};">💬 WHATSAPP</span>
+            <span style="color:{CHANNEL_COLORS['push']};">📱 MOBILE PUSH</span>
+            <span style="color:{CHANNEL_COLORS['sms']};">📟 SMS</span>
+        </div>
+        """, unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
     with col_f2:
@@ -669,13 +678,13 @@ def render_funnel_and_leakage():
                 font=dict(family='Inter', color=PALETTE['navy'])
             )],
             legend=dict(
-                orientation='h', x=0.5, xanchor='center', y=-0.12,
+                orientation='h', x=0.5, xanchor='center', y=-0.14,
                 font=dict(size=11.5, family='Inter'),
                 traceorder='normal'
             ),
             showlegend=True
         )
-        st.plotly_chart(apply_exec_chart_theme(fig_donut2, height=310, show_legend=True, pad_l=15, pad_r=15, pad_t=15, pad_b=10))
+        st.plotly_chart(apply_exec_chart_theme(fig_donut2, height=330, show_legend=True, pad_l=15, pad_r=15, pad_t=15, pad_b=20), use_container_width=True)
         st.markdown(f"""
         <div style="font-size:11.8px; color:{PALETTE['muted']}; text-align:center; margin-top:2px;">
             👥 <strong>People Perspective:</strong> {cand_reached:,} of {cand_total:,} candidates reached ({cand_reach_pct:.1f}%) · {cand_unreached:,} missed.
@@ -706,28 +715,40 @@ def render_channels_and_providers():
 
         ch_totals = ct_ch[['SENT','FAILED','SKIPPED']].sum(axis=1)
 
+        ch_tick_names = [c.upper() for c in ct_ch.index]
+        ch_tick_html  = [f"<b style='color:{CHANNEL_COLORS.get(c.lower(), PALETTE['navy'])}'>{c.upper()}</b>" for c in ct_ch.index]
+
         fig_ch = go.Figure()
         for status, color in [('SENT', STATUS_COLORS['SENT']), ('SKIPPED', STATUS_COLORS['SKIPPED']), ('FAILED', STATUS_COLORS['FAILED'])]:
+            shares = [(v / ch_totals[c] * 100) if ch_totals[c] > 0 else 0 for c, v in zip(ct_ch.index, ct_ch[status])]
             fig_ch.add_trace(go.Bar(
-                x=[c.upper() for c in ct_ch.index], y=ct_ch[status], name=status,
+                x=ch_tick_names, y=ct_ch[status], name=status,
                 marker_color=color, marker_line=dict(color='white', width=1),
-                text=[f"<b>{int(v):,}</b>" if v > 60 else "" for v in ct_ch[status]],
+                text=[f"<b>{int(v):,}</b>" if v >= 50 else "" for v in ct_ch[status]],
                 textposition='inside', textfont=dict(size=12, color='white', family='Inter'),
                 insidetextanchor='middle',
-                hovertemplate=f"<b>%{{x}}</b><br>{status}: %{{y:,}}<extra></extra>"
+                customdata=shares,
+                hovertemplate=f"<b>%{{x}} · {status}</b><br>Attempts: %{{y:,}}<br>Share of Channel: %{{customdata:.1f}}%<extra></extra>"
             ))
-        for ch, total in zip([c.upper() for c in ct_ch.index], ch_totals):
+        for ch, total in zip(ch_tick_names, ch_totals):
             fig_ch.add_annotation(x=ch, y=total, text=f"<b>Total: {int(total):,}</b>",
                 showarrow=False, yshift=14, font=dict(size=12, color=PALETTE['charcoal'], family='Inter'))
 
         fig_ch.update_layout(
             barmode='stack',
-            xaxis=dict(title="Channel", showgrid=False, tickfont=dict(size=13, family='Inter', color=PALETTE['charcoal'])),
+            xaxis=dict(
+                title="Channel",
+                showgrid=False,
+                tickmode='array',
+                tickvals=ch_tick_names,
+                ticktext=ch_tick_html,
+                tickfont=dict(size=13, family='Inter')
+            ),
             yaxis=dict(title="Delivery Attempts", showgrid=True, gridcolor='#f1f5f9',
-                       range=[0, ch_totals.max() * 1.22]),
+                       range=[0, ch_totals.max() * 1.28]),
             bargap=0.35
         )
-        st.plotly_chart(apply_exec_chart_theme(fig_ch, height=400, pad_l=50, pad_r=35, pad_t=60, pad_b=45))
+        st.plotly_chart(apply_exec_chart_theme(fig_ch, height=400, pad_l=55, pad_r=35, pad_t=60, pad_b=45), use_container_width=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
     with col_c2:
@@ -735,13 +756,17 @@ def render_channels_and_providers():
         render_chart_header(
             title="🍩 Volume Split by Channel & Delivery Status",
             significance="Shows how volume is split across communication channels AND color-codes each channel by its delivery health (Sent, Skipped, Failed).",
-            calculation="Channel attempts split by delivery status. Green/Teal = SENT, Amber = SKIPPED, Crimson = FAILED.",
+            calculation="Channel attempts split by delivery status. Green = SENT, Amber = SKIPPED, Crimson = FAILED.",
             action="WhatsApp has an 84% failure rate and Push has a 95% skip rate — focus remediation on these two channels."
         )
 
         split_view = st.radio(
             "Color Coding Mode:",
-            ["☀️ Sunburst (Channel → Status Rings)", "🍩 Donut (Slices by Status)"],
+            [
+                "☀️ Sunburst (Channels → Status)",
+                "📱 Donut by Channel",
+                "🚦 Donut by Delivery Status"
+            ],
             horizontal=True,
             key="channel_status_split_view"
         )
@@ -783,63 +808,142 @@ def render_channels_and_providers():
                 branchvalues='total',
                 marker=dict(colors=sb_colors, line=dict(color='white', width=1.5)),
                 hovertext=sb_hovers,
-                hoverinfo='text'
+                hoverinfo='text',
+                insidetextorientation='horizontal',
+                textfont=dict(family='Inter', size=11)
             ))
             fig_donut.update_layout(
                 margin=dict(l=10, r=10, t=15, b=15)
             )
-            st.plotly_chart(apply_exec_chart_theme(fig_donut, height=360, show_legend=False, pad_l=10, pad_r=10, pad_t=25, pad_b=15))
-        else:
-            # Donut colored directly by delivery status
-            cs_df = filtered_df.groupby(['channel', 'status']).size().reset_index(name='count')
-            cs_df['label'] = cs_df['channel'].str.upper() + " (" + cs_df['status'] + ")"
-            cs_df['color'] = cs_df['status'].map(STATUS_COLORS).fillna(PALETTE['muted'])
-            cs_df = cs_df.sort_values(by=['status', 'count'], ascending=[True, False])
+            st.plotly_chart(apply_exec_chart_theme(fig_donut, height=360, show_legend=False, pad_l=10, pad_r=10, pad_t=25, pad_b=15), use_container_width=True)
+            st.markdown(f"""
+            <div style="display:flex; justify-content:center; gap:14px; font-size:11.8px; font-weight:600; margin-top:4px;">
+                <span style="color:{STATUS_COLORS['SENT']};">🟢 SENT: {int(filtered_df['sent_flag'].sum()):,} ({filtered_df['sent_flag'].mean()*100:.1f}%)</span>
+                <span style="color:{STATUS_COLORS['SKIPPED']};">🟡 SKIPPED: {int(filtered_df['skipped_flag'].sum()):,} ({filtered_df['skipped_flag'].mean()*100:.1f}%)</span>
+                <span style="color:{STATUS_COLORS['FAILED']};">🔴 FAILED: {int(filtered_df['failed_flag'].sum()):,} ({filtered_df['failed_flag'].mean()*100:.1f}%)</span>
+            </div>
+            """, unsafe_allow_html=True)
+
+        elif "Channel" in split_view:
+            # Donut colored by Channel
+            ch_grp = filtered_df.groupby('channel').size().reindex(['email', 'whatsapp', 'push', 'sms']).fillna(0)
+            ch_labels = [c.upper() for c in ch_grp.index]
+            ch_vals   = ch_grp.values
+            ch_clrs   = [CHANNEL_COLORS[c] for c in ch_grp.index]
 
             fig_donut = go.Figure(go.Pie(
-                labels=cs_df['label'],
-                values=cs_df['count'],
+                labels=ch_labels,
+                values=ch_vals,
                 hole=0.62,
-                marker=dict(colors=cs_df['color'], line=dict(color='white', width=2)),
-                textinfo='percent',
-                textfont=dict(size=11, family='Inter', color='white'),
+                marker=dict(colors=ch_clrs, line=dict(color='white', width=2)),
+                textinfo='percent+label',
+                textposition='inside',
+                textfont=dict(size=11.5, family='Inter', color='white'),
                 hovertemplate="<b>%{label}</b><br>Attempts: %{value:,}<br>Share of Total: %{percent}<extra></extra>"
             ))
             fig_donut.update_layout(
                 annotations=[dict(text=f"<b>{total_legs_val:,}</b><br><span style='font-size:11px'>Total Tries</span>", x=0.5, y=0.5, font_size=15, showarrow=False, font=dict(family='Inter', color=PALETTE['navy']))]
             )
-            st.plotly_chart(apply_exec_chart_theme(fig_donut, height=360, show_legend=False, pad_l=10, pad_r=10, pad_t=25, pad_b=15))
+            st.plotly_chart(apply_exec_chart_theme(fig_donut, height=360, show_legend=False, pad_l=10, pad_r=10, pad_t=25, pad_b=15), use_container_width=True)
+            st.markdown(f"""
+            <div style="display:flex; justify-content:center; gap:12px; font-size:11.8px; font-weight:600; margin-top:4px; flex-wrap:wrap;">
+                <span style="color:{CHANNEL_COLORS['email']};">📧 EMAIL: {int(ch_grp.get('email',0)):,} ({ch_grp.get('email',0)/total_legs_val*100:.1f}%)</span>
+                <span style="color:{CHANNEL_COLORS['whatsapp']};">💬 WHATSAPP: {int(ch_grp.get('whatsapp',0)):,} ({ch_grp.get('whatsapp',0)/total_legs_val*100:.1f}%)</span>
+                <span style="color:{CHANNEL_COLORS['push']};">📱 PUSH: {int(ch_grp.get('push',0)):,} ({ch_grp.get('push',0)/total_legs_val*100:.1f}%)</span>
+                <span style="color:{CHANNEL_COLORS['sms']};">📟 SMS: {int(ch_grp.get('sms',0)):,} ({ch_grp.get('sms',0)/total_legs_val*100:.1f}%)</span>
+            </div>
+            """, unsafe_allow_html=True)
 
-        st.markdown(f"""
-        <div style="display:flex; justify-content:center; gap:14px; font-size:11.8px; font-weight:600; margin-top:4px;">
-            <span style="color:{STATUS_COLORS['SENT']};">🟢 SENT: {int(filtered_df['sent_flag'].sum()):,} ({filtered_df['sent_flag'].mean()*100:.1f}%)</span>
-            <span style="color:{STATUS_COLORS['SKIPPED']};">🟡 SKIPPED: {int(filtered_df['skipped_flag'].sum()):,} ({filtered_df['skipped_flag'].mean()*100:.1f}%)</span>
-            <span style="color:{STATUS_COLORS['FAILED']};">🔴 FAILED: {int(filtered_df['failed_flag'].sum()):,} ({filtered_df['failed_flag'].mean()*100:.1f}%)</span>
-        </div>
-        """, unsafe_allow_html=True)
+        else:
+            # Donut colored by Delivery Status
+            st_grp = filtered_df.groupby('status').size().reindex(['SENT', 'SKIPPED', 'FAILED']).fillna(0)
+            st_labels = ['SENT', 'SKIPPED', 'FAILED']
+            st_vals   = [st_grp.get('SENT', 0), st_grp.get('SKIPPED', 0), st_grp.get('FAILED', 0)]
+            st_clrs   = [STATUS_COLORS['SENT'], STATUS_COLORS['SKIPPED'], STATUS_COLORS['FAILED']]
+
+            fig_donut = go.Figure(go.Pie(
+                labels=st_labels,
+                values=st_vals,
+                hole=0.62,
+                marker=dict(colors=st_clrs, line=dict(color='white', width=2)),
+                textinfo='percent+label',
+                textposition='inside',
+                textfont=dict(size=12, family='Inter', color='white'),
+                hovertemplate="<b>%{label}</b><br>Attempts: %{value:,}<br>Share of Total: %{percent}<extra></extra>"
+            ))
+            fig_donut.update_layout(
+                annotations=[dict(text=f"<b>{total_legs_val:,}</b><br><span style='font-size:11px'>Total Tries</span>", x=0.5, y=0.5, font_size=15, showarrow=False, font=dict(family='Inter', color=PALETTE['navy']))]
+            )
+            st.plotly_chart(apply_exec_chart_theme(fig_donut, height=360, show_legend=False, pad_l=10, pad_r=10, pad_t=25, pad_b=15), use_container_width=True)
+            st.markdown(f"""
+            <div style="display:flex; justify-content:center; gap:14px; font-size:11.8px; font-weight:600; margin-top:4px;">
+                <span style="color:{STATUS_COLORS['SENT']};">🟢 SENT: {int(st_grp.get('SENT',0)):,} ({st_grp.get('SENT',0)/total_legs_val*100:.1f}%)</span>
+                <span style="color:{STATUS_COLORS['SKIPPED']};">🟡 SKIPPED: {int(st_grp.get('SKIPPED',0)):,} ({st_grp.get('SKIPPED',0)/total_legs_val*100:.1f}%)</span>
+                <span style="color:{STATUS_COLORS['FAILED']};">🔴 FAILED: {int(st_grp.get('FAILED',0)):,} ({st_grp.get('FAILED',0)/total_legs_val*100:.1f}%)</span>
+            </div>
+            """, unsafe_allow_html=True)
+
         st.markdown('</div>', unsafe_allow_html=True)
 
+    # Dynamic Channel Metrics
+    ch_metrics = {}
+    for ch_name in ['email', 'whatsapp', 'push', 'sms']:
+        c_sub = filtered_df[filtered_df['channel'] == ch_name]
+        c_tot = len(c_sub)
+        c_sent = int(c_sub['sent_flag'].sum())
+        c_skip = int(c_sub['skipped_flag'].sum())
+        c_fail = int(c_sub['failed_flag'].sum())
+        c_rate = (c_sent / c_tot * 100) if c_tot > 0 else 0
+        ch_metrics[ch_name] = {
+            'tot': c_tot, 'sent': c_sent, 'skip': c_skip, 'fail': c_fail, 'rate': c_rate
+        }
+
     ce1, ce2, ce3, ce4 = st.columns(4)
+    em_m = ch_metrics['email']
+    wa_m = ch_metrics['whatsapp']
+    pu_m = ch_metrics['push']
+    sm_m = ch_metrics['sms']
+
     with ce1:
-        st.markdown(f"""<div class="exec-card" style="border-left:4px solid {CHANNEL_COLORS['email']};">
-            <div style="font-weight:700;color:{CHANNEL_COLORS['email']};font-size:14px;">📧 EMAIL — 1,308 Attempts</div>
-            <div style="font-size:22px;font-weight:800;color:{PALETTE['navy']};margin:6px 0;">55.4% Delivered</div>
-            <div style="font-size:12px;color:{PALETTE['muted']};line-height:1.6;">✅ No failures · ⏭️ 44.6% skipped<br>Reason: email address missing at registration</div></div>""", unsafe_allow_html=True)
+        st.markdown(f"""<div class="exec-card" style="border-left:5px solid {CHANNEL_COLORS['email']};">
+            <div style="font-weight:700;color:{CHANNEL_COLORS['email']};font-size:14px;">📧 EMAIL — {em_m['tot']:,} Attempts</div>
+            <div style="font-size:22px;font-weight:800;color:{PALETTE['navy']};margin:6px 0;">{em_m['rate']:.1f}% Delivered</div>
+            <div style="font-size:12px;color:{PALETTE['muted']};line-height:1.6;">
+                <span style="color:{STATUS_COLORS['SENT']};font-weight:700;">✅ {em_m['sent']:,} Sent</span> · 
+                <span style="color:{STATUS_COLORS['SKIPPED']};font-weight:700;">⏭️ {em_m['skip']:,} Skipped</span> · 
+                <span style="color:{STATUS_COLORS['FAILED']};font-weight:700;">❌ {em_m['fail']:,} Failed</span><br>
+                Reason: email address missing on candidate profile
+            </div></div>""", unsafe_allow_html=True)
     with ce2:
-        st.markdown(f"""<div class="exec-card" style="border-left:4px solid {CHANNEL_COLORS['whatsapp']};">
-            <div style="font-weight:700;color:{CHANNEL_COLORS['whatsapp']};font-size:14px;">💬 WHATSAPP — 1,308 Attempts</div>
-            <div style="font-size:22px;font-weight:800;color:{PALETTE['navy']};margin:6px 0;">14.8% Delivered</div>
-            <div style="font-size:12px;color:{PALETTE['muted']};line-height:1.6;">❌ 84% failed · Error code 131008<br>Reason: missing field in the message template</div></div>""", unsafe_allow_html=True)
+        st.markdown(f"""<div class="exec-card" style="border-left:5px solid {CHANNEL_COLORS['whatsapp']};">
+            <div style="font-weight:700;color:{CHANNEL_COLORS['whatsapp']};font-size:14px;">💬 WHATSAPP — {wa_m['tot']:,} Attempts</div>
+            <div style="font-size:22px;font-weight:800;color:{PALETTE['navy']};margin:6px 0;">{wa_m['rate']:.1f}% Delivered</div>
+            <div style="font-size:12px;color:{PALETTE['muted']};line-height:1.6;">
+                <span style="color:{STATUS_COLORS['SENT']};font-weight:700;">✅ {wa_m['sent']:,} Sent</span> · 
+                <span style="color:{STATUS_COLORS['SKIPPED']};font-weight:700;">⏭️ {wa_m['skip']:,} Skipped</span> · 
+                <span style="color:{STATUS_COLORS['FAILED']};font-weight:700;">❌ {wa_m['fail']:,} Failed</span><br>
+                Reason: missing field in WhatsApp template (131008)
+            </div></div>""", unsafe_allow_html=True)
     with ce3:
-        st.markdown(f"""<div class="exec-card" style="border-left:4px solid {CHANNEL_COLORS['push']};">
-            <div style="font-weight:700;color:{CHANNEL_COLORS['push']};font-size:14px;">📱 MOBILE PUSH — 1,302 Attempts</div>
-            <div style="font-size:22px;font-weight:800;color:{PALETTE['navy']};margin:6px 0;">0.0% Delivered</div>
-            <div style="font-size:12px;color:{PALETTE['muted']};line-height:1.6;">⏭️ 95.2% skipped · No device token saved<br>Reason: app did not record device ID at login</div></div>""", unsafe_allow_html=True)
+        st.markdown(f"""<div class="exec-card" style="border-left:5px solid {CHANNEL_COLORS['push']};">
+            <div style="font-weight:700;color:{CHANNEL_COLORS['push']};font-size:14px;">📱 MOBILE PUSH — {pu_m['tot']:,} Attempts</div>
+            <div style="font-size:22px;font-weight:800;color:{PALETTE['navy']};margin:6px 0;">{pu_m['rate']:.1f}% Delivered</div>
+            <div style="font-size:12px;color:{PALETTE['muted']};line-height:1.6;">
+                <span style="color:{STATUS_COLORS['SENT']};font-weight:700;">✅ {pu_m['sent']:,} Sent</span> · 
+                <span style="color:{STATUS_COLORS['SKIPPED']};font-weight:700;">⏭️ {pu_m['skip']:,} Skipped</span> · 
+                <span style="color:{STATUS_COLORS['FAILED']};font-weight:700;">❌ {pu_m['fail']:,} Failed</span><br>
+                Reason: app did not record device ID at login
+            </div></div>""", unsafe_allow_html=True)
     with ce4:
-        st.markdown(f"""<div class="exec-card" style="border-left:4px solid {CHANNEL_COLORS['sms']};">
-            <div style="font-weight:700;color:{CHANNEL_COLORS['sms']};font-size:14px;">📟 SMS — 6 Attempts</div>
-            <div style="font-size:22px;font-weight:800;color:{PALETTE['navy']};margin:6px 0;">0.0% Delivered</div>
-            <div style="font-size:12px;color:{PALETTE['muted']};line-height:1.6;">❌ 100% failed · Regulatory block<br>Reason: awaiting government SMS approval (India)</div></div>""", unsafe_allow_html=True)
+        st.markdown(f"""<div class="exec-card" style="border-left:5px solid {CHANNEL_COLORS['sms']};">
+            <div style="font-weight:700;color:{CHANNEL_COLORS['sms']};font-size:14px;">📟 SMS — {sm_m['tot']:,} Attempts</div>
+            <div style="font-size:22px;font-weight:800;color:{PALETTE['navy']};margin:6px 0;">{sm_m['rate']:.1f}% Delivered</div>
+            <div style="font-size:12px;color:{PALETTE['muted']};line-height:1.6;">
+                <span style="color:{STATUS_COLORS['SENT']};font-weight:700;">✅ {sm_m['sent']:,} Sent</span> · 
+                <span style="color:{STATUS_COLORS['SKIPPED']};font-weight:700;">⏭️ {sm_m['skip']:,} Skipped</span> · 
+                <span style="color:{STATUS_COLORS['FAILED']};font-weight:700;">❌ {sm_m['fail']:,} Failed</span><br>
+                Reason: awaiting government SMS approval (India DLT)
+            </div></div>""", unsafe_allow_html=True)
 
 
 # ── 5. Triggers & Templates ───────────────────────────────────────────────────
@@ -878,13 +982,13 @@ def render_triggers_and_templates():
             customdata=list(zip(trig_reach['reached'], trig_reach['total']))
         ))
         fig_reach.update_layout(
-            xaxis=dict(title="", showgrid=False, tickangle=-12, tickfont=dict(size=12)),
+            xaxis=dict(title="", showgrid=False, tickangle=-12, tickfont=dict(size=12, family='Inter')),
             yaxis=dict(title="Delivery Success Rate (%)", showgrid=True, gridcolor='#f1f5f9', range=[0, 135]),
             bargap=0.35
         )
         fig_reach.add_hline(y=70, line_dash="dot", line_color=STATUS_COLORS['SENT'],    annotation_text="70% Target",  annotation_position="right", annotation_font_color=STATUS_COLORS['SENT'])
         fig_reach.add_hline(y=40, line_dash="dot", line_color=STATUS_COLORS['SKIPPED'], annotation_text="40% Warning", annotation_position="right", annotation_font_color=STATUS_COLORS['SKIPPED'])
-        st.plotly_chart(apply_exec_chart_theme(fig_reach, height=420, show_legend=False, pad_l=50, pad_r=65, pad_t=60, pad_b=50))
+        st.plotly_chart(apply_exec_chart_theme(fig_reach, height=420, show_legend=False, pad_l=50, pad_r=85, pad_t=50, pad_b=55), use_container_width=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
     with col_tr2:
@@ -954,15 +1058,16 @@ def render_time_series():
             marker=dict(size=8, color=PALETTE['navy'], line=dict(color='white', width=1.5)),
             text=[f"<b>{r}%</b>" for r in daily_df['success_rate']],
             textposition='top center', textfont=dict(size=11.5, color=PALETTE['navy'], family='Inter'),
-            hovertemplate="<b>%{x}</b><br>Sent Rate: %{y:.1f}%<extra></extra>"))
+            customdata=daily_df['total_attempts'],
+            hovertemplate="<b>%{x}</b><br>Sent Rate: %{y:.1f}%<br>Total Attempts: %{customdata:,}<extra></extra>"))
         fig_time.update_layout(
             barmode='stack',
             xaxis=dict(title="Date", showgrid=False, tickangle=-30),
             yaxis=dict(title="Attempt Count", showgrid=True, gridcolor='#f1f5f9'),
-            yaxis2=dict(title="Sent Rate (%)", overlaying='y', side='right', range=[0, 130], showgrid=False),
+            yaxis2=dict(title="Sent Rate (%)", overlaying='y', side='right', range=[0, 135], showgrid=False),
             bargap=0.25
         )
-        st.plotly_chart(apply_exec_chart_theme(fig_time, height=400, pad_l=50, pad_r=65, pad_t=60, pad_b=50))
+        st.plotly_chart(apply_exec_chart_theme(fig_time, height=400, pad_l=50, pad_r=70, pad_t=60, pad_b=50), use_container_width=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
     with col_t2:
@@ -989,15 +1094,16 @@ def render_time_series():
             text=[f"<b>{c:,}</b><br>{p}%" for c, p in zip(day_cnts['Count'], day_cnts['Pct'])],
             textposition='outside', textfont=dict(family='Inter', size=12.5, color=PALETTE['charcoal']),
             cliponaxis=False,
-            hovertemplate="<b>%{x}</b><br>Volume: %{y:,}<extra></extra>"
+            customdata=day_cnts['Pct'],
+            hovertemplate="<b>%{x}</b><br>Volume: %{y:,}<br>Share: %{customdata:.1f}%<extra></extra>"
         ))
         fig_dow.update_layout(
-            xaxis=dict(title="", showgrid=False, tickangle=-30, tickfont=dict(size=12, family='Inter')),
+            xaxis=dict(title="", showgrid=False, tickangle=0, tickfont=dict(size=12, family='Inter')),
             yaxis=dict(title="Volume", showgrid=True, gridcolor='#f1f5f9',
-                       range=[0, day_cnts['Count'].max() * 1.45]),
+                       range=[0, day_cnts['Count'].max() * 1.35]),
             bargap=0.3
         )
-        st.plotly_chart(apply_exec_chart_theme(fig_dow, height=400, show_legend=False, pad_l=45, pad_r=25, pad_t=55, pad_b=50))
+        st.plotly_chart(apply_exec_chart_theme(fig_dow, height=400, show_legend=False, pad_l=50, pad_r=25, pad_t=45, pad_b=45), use_container_width=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
 
@@ -1051,9 +1157,9 @@ def render_time_series():
         xaxis=dict(title="Dispatch Hour (UTC)", showgrid=False,
                    tickfont=dict(size=11.5, family='Inter'), tickangle=-30),
         yaxis=dict(title="", autorange="reversed", showgrid=False,
-                   tickfont=dict(size=13, family='Inter'))
+                   tickfont=dict(size=12.5, family='Inter'))
     )
-    st.plotly_chart(apply_exec_chart_theme(fig_heat, height=340, show_legend=False, pad_l=60, pad_r=40, pad_t=30, pad_b=50))
+    st.plotly_chart(apply_exec_chart_theme(fig_heat, height=340, show_legend=False, pad_l=75, pad_r=50, pad_t=30, pad_b=50), use_container_width=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
     # ── Heatmap 2: Monthly Calendar Heatmap ──
@@ -1179,7 +1285,7 @@ def render_time_series():
         ms3.metric("Peak Day",           peak_day_lbl,         f"{peak_day_vol:,} attempts")
         ms4.metric("Active Days",        f"{month_df['notification_day'].nunique()} days")
 
-        st.plotly_chart(apply_exec_chart_theme(fig_month_heat, height=480, show_legend=False, pad_l=65, pad_r=40, pad_t=20, pad_b=55))
+        st.plotly_chart(apply_exec_chart_theme(fig_month_heat, height=480, show_legend=False, pad_l=70, pad_r=45, pad_t=25, pad_b=60), use_container_width=True)
 
     st.markdown('</div>', unsafe_allow_html=True)
 
@@ -1199,30 +1305,65 @@ def render_demographics_and_segmentation():
             action="Target the Unknown/Virtual segment where 88.9% of notifications fail — enforce location tagging at onboarding."
         )
 
-        loc_ct = pd.crosstab(filtered_df['client_location'], filtered_df['status']).fillna(0)
+        # Handle missing locations properly so Virtual / Online is visible
+        clean_loc_series = filtered_df['client_location'].fillna('Virtual / Online (No Plant)')
+        loc_ct = pd.crosstab(clean_loc_series, filtered_df['status']).fillna(0)
         for col in ['SENT','FAILED','SKIPPED']:
             if col not in loc_ct.columns: loc_ct[col] = 0
         loc_ct['TOTAL'] = loc_ct.sum(axis=1)
         loc_top  = loc_ct.sort_values(by='TOTAL', ascending=True).tail(6)
-        y_labels = [l[:30]+'...' if len(l) > 30 else l for l in loc_top.index]
+
+        def format_facility_name(loc):
+            if not loc or pd.isna(loc) or str(loc).strip().lower() in ['nan', 'none', 'unknown', '']:
+                return "Virtual / Online (No Plant)"
+            s = str(loc).strip()
+            if "kharkhoda" in s.lower() or "plant-4" in s.lower():
+                return "Kharkhoda Plant-4 (HR)"
+            if "pune" in s.lower() or "ahmednagar" in s.lower():
+                return "Pune MIDC (MH)"
+            if "sangareddy" in s.lower() or "kambalpalle" in s.lower():
+                return "Sangareddy Hub (TG)"
+            if "silvassa" in s.lower() or "naroli" in s.lower():
+                return "Silvassa Facility (GJ)"
+            if "bhwadi" in s.lower() or "bhiwadi" in s.lower() or "alwar" in s.lower():
+                return "Bhiwadi Ind. Area (RJ)"
+            if "bengaluru" in s.lower():
+                return "Bengaluru Training Center"
+            if "test client" in s.lower():
+                return "Test Client (HR)"
+            return s[:24] + "…" if len(s) > 24 else s
+
+        y_labels = [format_facility_name(l) for l in loc_top.index]
+        raw_addresses = [str(l) if pd.notna(l) and str(l).strip() != 'Virtual / Online (No Plant)' else "Virtual / online student (no physical plant)" for l in loc_top.index]
 
         fig_loc = go.Figure()
         for status, color in [('SENT',STATUS_COLORS['SENT']),('SKIPPED',STATUS_COLORS['SKIPPED']),('FAILED',STATUS_COLORS['FAILED'])]:
+            shares = [(v / tot * 100) if tot > 0 else 0 for v, tot in zip(loc_top[status], loc_top['TOTAL'])]
             fig_loc.add_trace(go.Bar(
                 y=y_labels, x=loc_top[status], name=status, orientation='h',
                 marker_color=color, marker_line=dict(color='white', width=1),
-                text=[f"<b>{int(v):,}</b>" if v > 50 else "" for v in loc_top[status]],
+                text=[f"<b>{int(v):,}</b>" if v >= 40 else "" for v in loc_top[status]],
                 textposition='inside', textfont=dict(size=11.5, color='white', family='Inter'),
                 insidetextanchor='middle',
-                hovertemplate=f"<b>%{{y}}</b><br>{status}: %{{x:,}}<extra></extra>"
+                customdata=list(zip(raw_addresses, shares)),
+                hovertemplate="<b>%{y}</b><br>"+status+": %{x:,} attempts (%{customdata[1]:.1f}%)<br><span style='font-size:10px;color:#64748b;'>%{customdata[0]}</span><extra></extra>"
             ))
+
+        for y_lbl, tot in zip(y_labels, loc_top['TOTAL']):
+            fig_loc.add_annotation(
+                y=y_lbl, x=tot, text=f"<b>Total: {int(tot):,}</b>",
+                showarrow=False, xshift=10, xanchor='left',
+                font=dict(size=11.5, color=PALETTE['charcoal'], family='Inter')
+            )
+
         fig_loc.update_layout(
             barmode='stack',
-            xaxis=dict(title="Delivery Attempts", showgrid=True, gridcolor='#f1f5f9'),
-            yaxis=dict(showgrid=False, tickfont=dict(size=12)),
-            bargap=0.25
+            xaxis=dict(title="Delivery Attempts", showgrid=True, gridcolor='#f1f5f9',
+                       range=[0, loc_top['TOTAL'].max() * 1.32]),
+            yaxis=dict(showgrid=False, tickfont=dict(size=12, family='Inter', color=PALETTE['charcoal'])),
+            bargap=0.28
         )
-        st.plotly_chart(apply_exec_chart_theme(fig_loc, height=400, pad_l=15, pad_r=40, pad_t=55, pad_b=40))
+        st.plotly_chart(apply_exec_chart_theme(fig_loc, height=400, pad_l=185, pad_r=65, pad_t=55, pad_b=40), use_container_width=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
     with col_d2:
@@ -1234,30 +1375,42 @@ def render_demographics_and_segmentation():
             action="Standardize backend payload generation per trainer assignment to ensure consistent WhatsApp template parameter injection."
         )
 
-        tr_ct = pd.crosstab(filtered_df['trainer_name'], filtered_df['status']).fillna(0)
+        clean_tr_series = filtered_df['trainer_name'].fillna('Unassigned / Automated')
+        tr_ct = pd.crosstab(clean_tr_series, filtered_df['status']).fillna(0)
         for col in ['SENT','FAILED','SKIPPED']:
             if col not in tr_ct.columns: tr_ct[col] = 0
         tr_ct['TOTAL'] = tr_ct.sum(axis=1)
         tr_top   = tr_ct.sort_values(by='TOTAL', ascending=True).tail(6)
-        y_labels_tr = [l[:28]+'...' if len(l) > 28 else l for l in tr_top.index]
+        y_labels_tr = [str(l) for l in tr_top.index]
 
         fig_tr = go.Figure()
         for status, color in [('SENT',STATUS_COLORS['SENT']),('SKIPPED',STATUS_COLORS['SKIPPED']),('FAILED',STATUS_COLORS['FAILED'])]:
+            shares_tr = [(v / tot * 100) if tot > 0 else 0 for v, tot in zip(tr_top[status], tr_top['TOTAL'])]
             fig_tr.add_trace(go.Bar(
                 y=y_labels_tr, x=tr_top[status], name=status, orientation='h',
                 marker_color=color, marker_line=dict(color='white', width=1),
-                text=[f"<b>{int(v):,}</b>" if v > 50 else "" for v in tr_top[status]],
+                text=[f"<b>{int(v):,}</b>" if v >= 40 else "" for v in tr_top[status]],
                 textposition='inside', textfont=dict(size=11.5, color='white', family='Inter'),
                 insidetextanchor='middle',
-                hovertemplate=f"<b>%{{y}}</b><br>{status}: %{{x:,}}<extra></extra>"
+                customdata=shares_tr,
+                hovertemplate="<b>%{y}</b><br>"+status+": %{x:,} attempts (%{customdata:.1f}%)<extra></extra>"
             ))
+
+        for y_lbl, tot in zip(y_labels_tr, tr_top['TOTAL']):
+            fig_tr.add_annotation(
+                y=y_lbl, x=tot, text=f"<b>Total: {int(tot):,}</b>",
+                showarrow=False, xshift=10, xanchor='left',
+                font=dict(size=11.5, color=PALETTE['charcoal'], family='Inter')
+            )
+
         fig_tr.update_layout(
             barmode='stack',
-            xaxis=dict(title="Delivery Attempts", showgrid=True, gridcolor='#f1f5f9'),
-            yaxis=dict(showgrid=False, tickfont=dict(size=12)),
-            bargap=0.25
+            xaxis=dict(title="Delivery Attempts", showgrid=True, gridcolor='#f1f5f9',
+                       range=[0, tr_top['TOTAL'].max() * 1.30]),
+            yaxis=dict(showgrid=False, tickfont=dict(size=12, family='Inter', color=PALETTE['charcoal'])),
+            bargap=0.28
         )
-        st.plotly_chart(apply_exec_chart_theme(fig_tr, height=400, pad_l=15, pad_r=40, pad_t=55, pad_b=40))
+        st.plotly_chart(apply_exec_chart_theme(fig_tr, height=400, pad_l=165, pad_r=65, pad_t=55, pad_b=40), use_container_width=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
 
@@ -1267,28 +1420,28 @@ def render_action_plan_and_triage():
 
     r1, r2, r3, r4 = st.columns(4)
     with r1:
-        st.markdown(f"""<div class="exec-card" style="border-top:4px solid {PALETTE['crimson']};">
-            <div style="font-weight:800;font-size:13px;color:{PALETTE['crimson']};">🔴 PRIORITY 1 — Fix Today</div>
-            <div style="font-weight:700;color:{PALETTE['navy']};margin:6px 0;font-size:14px;">WhatsApp Message Error</div>
-            <div style="font-size:12px;color:{PALETTE['muted']};margin-bottom:8px;line-height:1.6;">1,090 messages failed because a required field (date / trainer name) was missing from the WhatsApp template.</div>
+        st.markdown(f"""<div class="exec-card" style="border-top:4px solid {CHANNEL_COLORS['whatsapp']};">
+            <div style="font-weight:800;font-size:13px;color:{CHANNEL_COLORS['whatsapp']};">💬 PRIORITY 1 — Fix Today (WhatsApp)</div>
+            <div style="font-weight:700;color:{PALETTE['navy']};margin:6px 0;font-size:14px;">WhatsApp Template Bug (131008)</div>
+            <div style="font-size:12px;color:{PALETTE['muted']};margin-bottom:8px;line-height:1.6;">1,090 messages failed because date/trainer parameters were missing from the payload sent to WhatsApp.</div>
             <div style="font-size:12px;font-weight:700;color:{STATUS_COLORS['SENT']};">⏱ 1 day to fix · Recovers 1,090 deliveries</div></div>""", unsafe_allow_html=True)
     with r2:
-        st.markdown(f"""<div class="exec-card" style="border-top:4px solid {PALETTE['coral']};">
-            <div style="font-weight:800;font-size:13px;color:{PALETTE['coral']};">🟠 PRIORITY 2 — Fix This Week</div>
-            <div style="font-weight:700;color:{PALETTE['navy']};margin:6px 0;font-size:14px;">Mobile Push Not Saving Device ID</div>
-            <div style="font-size:12px;color:{PALETTE['muted']};margin-bottom:8px;line-height:1.6;">1,239 push attempts were skipped because the app did not record the device token when candidates logged in.</div>
+        st.markdown(f"""<div class="exec-card" style="border-top:4px solid {CHANNEL_COLORS['push']};">
+            <div style="font-weight:800;font-size:13px;color:{CHANNEL_COLORS['push']};">📱 PRIORITY 2 — Fix This Week (Push)</div>
+            <div style="font-weight:700;color:{PALETTE['navy']};margin:6px 0;font-size:14px;">Mobile App Push Token Ingestion</div>
+            <div style="font-size:12px;color:{PALETTE['muted']};margin-bottom:8px;line-height:1.6;">1,239 push attempts skipped because the app never saved device tokens to candidate profiles at login.</div>
             <div style="font-size:12px;font-weight:700;color:{STATUS_COLORS['SENT']};">⏱ 3–5 days to fix · Recovers 1,239 deliveries</div></div>""", unsafe_allow_html=True)
     with r3:
-        st.markdown(f"""<div class="exec-card" style="border-top:4px solid {PALETTE['amber']};">
-            <div style="font-weight:800;font-size:13px;color:{PALETTE['amber']};">🟡 PRIORITY 3 — Fix This Sprint</div>
-            <div style="font-weight:700;color:{PALETTE['navy']};margin:6px 0;font-size:14px;">Collect Email at Online Registration</div>
-            <div style="font-size:12px;color:{PALETTE['muted']};margin-bottom:8px;line-height:1.6;">371 online candidates had no email on file — making them impossible to reach when WhatsApp and Push both failed.</div>
+        st.markdown(f"""<div class="exec-card" style="border-top:4px solid {CHANNEL_COLORS['email']};">
+            <div style="font-weight:800;font-size:13px;color:{CHANNEL_COLORS['email']};">📧 PRIORITY 3 — Fix This Sprint (Email)</div>
+            <div style="font-weight:700;color:{PALETTE['navy']};margin:6px 0;font-size:14px;">Collect Email at Online Sign-Up</div>
+            <div style="font-size:12px;color:{PALETTE['muted']};margin-bottom:8px;line-height:1.6;">371 online candidates had no email on file — making them unreachable when WhatsApp/Push fail.</div>
             <div style="font-size:12px;font-weight:700;color:{STATUS_COLORS['SENT']};">⏱ 2 days to fix · Saves 584 candidates</div></div>""", unsafe_allow_html=True)
     with r4:
-        st.markdown(f"""<div class="exec-card" style="border-top:4px solid {PALETTE['sky']};">
-            <div style="font-weight:800;font-size:13px;color:{PALETTE['sky']};">🔵 PRIORITY 4 — Regulatory Track</div>
-            <div style="font-weight:700;color:{PALETTE['navy']};margin:6px 0;font-size:14px;">Activate SMS as Backup Channel</div>
-            <div style="font-size:12px;color:{PALETTE['muted']};margin-bottom:8px;line-height:1.6;">All 6 SMS attempts failed due to a pending government approval (India DLT). Once approved, SMS becomes a valuable offline fallback.</div>
+        st.markdown(f"""<div class="exec-card" style="border-top:4px solid {CHANNEL_COLORS['sms']};">
+            <div style="font-weight:800;font-size:13px;color:{CHANNEL_COLORS['sms']};">📟 PRIORITY 4 — Regulatory Track (SMS)</div>
+            <div style="font-weight:700;color:{PALETTE['navy']};margin:6px 0;font-size:14px;">Activate SMS Fallback via TRAI DLT</div>
+            <div style="font-size:12px;color:{PALETTE['muted']};margin-bottom:8px;line-height:1.6;">All 6 SMS attempts blocked by TRAI DLT registration. Approval unlocks reliable offline carrier fallback.</div>
             <div style="font-size:12px;font-weight:700;color:{STATUS_COLORS['SENT']};">⏱ ~1 week · Activates full SMS fallback</div></div>""", unsafe_allow_html=True)
 
     st.markdown('<div class="plot-card" style="margin-top:24px;">', unsafe_allow_html=True)
