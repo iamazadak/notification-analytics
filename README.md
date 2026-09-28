@@ -35,6 +35,13 @@ The aesthetic, color palette, scorecard architecture, and layout are directly re
    - Structured remediation items for Meta WhatsApp API 131008, Mobile Push Token sync, WMS Email validation, and India TRAI DLT SMS registration.
 9. **Interactive Raw Data Explorer & Triage:**
    - Real-time text search (Candidate Name, ID, External Ref), status filtering, and one-click CSV export.
+10. **Dedicated WhatsApp Analysis Hub:**
+    - End-to-end Meta Cloud API audit decoding Error #131008 (Missing parameters), Error #132018 (Schema format), and Error #132001 (Translation mismatch).
+    - 7-Template performance matrix exposing the 97.4% failure rate on online scheduled classes.
+    - Hourly batch timing chart isolating the 873 early morning failures (4 AM – 8 AM).
+    - Multi-channel ripple effect showing how WhatsApp failure strands 423 students with zero notifications.
+    - Side-by-side broken vs. patched JSON payload diff, production Python patch, and live interactive payload validator.
+    - Dedicated WhatsApp failure triage table and JIRA-ready CSV export.
 
 ---
 
