@@ -733,26 +733,90 @@ def render_channels_and_providers():
     with col_c2:
         st.markdown('<div class="plot-card">', unsafe_allow_html=True)
         render_chart_header(
-            title="🍩 How Is Volume Split Across Channels?",
-            significance="Shows which channels carry the most traffic. An even split means good redundancy — if one channel fails, others can pick up the load.",
-            calculation="Total delivery attempts counted per channel and shown as a percentage of the overall total.",
-            action="SMS is barely being used (0.15% of volume) — investigate whether it can serve as a reliable backup when other channels fail."
+            title="🍩 Volume Split by Channel & Delivery Status",
+            significance="Shows how volume is split across communication channels AND color-codes each channel by its delivery health (Sent, Skipped, Failed).",
+            calculation="Channel attempts split by delivery status. Green/Teal = SENT, Amber = SKIPPED, Crimson = FAILED.",
+            action="WhatsApp has an 84% failure rate and Push has a 95% skip rate — focus remediation on these two channels."
         )
 
-        ch_sums = ct_ch.sum(axis=1)
-        total_legs_val = int(ch_sums.sum())
-        fig_donut = go.Figure(go.Pie(
-            labels=[c.upper() for c in ch_sums.index],
-            values=ch_sums.values, hole=0.65,
-            marker=dict(colors=[CHANNEL_COLORS.get(c.lower(), PALETTE['navy']) for c in ch_sums.index],
-                        line=dict(color='white', width=2)),
-            textinfo='label+percent', textfont=dict(size=11.5, family='Inter'),
-            hovertemplate="<b>%{label}</b><br>Attempts: %{value:,}<br>Share: %{percent}<extra></extra>"
-        ))
-        fig_donut.update_layout(
-            annotations=[dict(text=f"<b>{total_legs_val:,}</b><br>Total Legs", x=0.5, y=0.5, font_size=14, showarrow=False)]
+        split_view = st.radio(
+            "Color Coding Mode:",
+            ["☀️ Sunburst (Channel → Status Rings)", "🍩 Donut (Slices by Status)"],
+            horizontal=True,
+            key="channel_status_split_view"
         )
-        st.plotly_chart(apply_exec_chart_theme(fig_donut, height=400, show_legend=False, pad_l=20, pad_r=20, pad_t=40, pad_b=30))
+
+        total_legs_val = len(filtered_df)
+
+        if "Sunburst" in split_view:
+            # 2-Tier Sunburst: Inner = Channels, Outer = Delivery Status
+            sb_labels = []
+            sb_parents = []
+            sb_values = []
+            sb_colors = []
+            sb_hovers = []
+
+            ch_grp = filtered_df.groupby('channel').size()
+            for ch, tot in ch_grp.items():
+                sb_labels.append(ch.upper())
+                sb_parents.append('')
+                sb_values.append(tot)
+                sb_colors.append(CHANNEL_COLORS.get(ch, PALETTE['navy']))
+                sb_hovers.append(f"<b>{ch.upper()}</b><br>Total Attempts: {tot:,}<br>Share: {tot/total_legs_val*100:.1f}%")
+
+            cs_df = filtered_df.groupby(['channel', 'status']).size().reset_index(name='count')
+            for _, r in cs_df.iterrows():
+                ch = r['channel']
+                st_val = r['status']
+                cnt = r['count']
+                ch_tot = ch_grp[ch]
+                sb_labels.append(f"{ch.upper()} · {st_val}")
+                sb_parents.append(ch.upper())
+                sb_values.append(cnt)
+                sb_colors.append(STATUS_COLORS.get(st_val, PALETTE['muted']))
+                sb_hovers.append(f"<b>{ch.upper()} → {st_val}</b><br>Attempts: {cnt:,}<br>{cnt/ch_tot*100:.1f}% of {ch.upper()}<br>{cnt/total_legs_val*100:.1f}% of all attempts")
+
+            fig_donut = go.Figure(go.Sunburst(
+                labels=sb_labels,
+                parents=sb_parents,
+                values=sb_values,
+                branchvalues='total',
+                marker=dict(colors=sb_colors, line=dict(color='white', width=1.5)),
+                hovertext=sb_hovers,
+                hoverinfo='text'
+            ))
+            fig_donut.update_layout(
+                margin=dict(l=10, r=10, t=15, b=15)
+            )
+            st.plotly_chart(apply_exec_chart_theme(fig_donut, height=360, show_legend=False, pad_l=10, pad_r=10, pad_t=25, pad_b=15))
+        else:
+            # Donut colored directly by delivery status
+            cs_df = filtered_df.groupby(['channel', 'status']).size().reset_index(name='count')
+            cs_df['label'] = cs_df['channel'].str.upper() + " (" + cs_df['status'] + ")"
+            cs_df['color'] = cs_df['status'].map(STATUS_COLORS).fillna(PALETTE['muted'])
+            cs_df = cs_df.sort_values(by=['status', 'count'], ascending=[True, False])
+
+            fig_donut = go.Figure(go.Pie(
+                labels=cs_df['label'],
+                values=cs_df['count'],
+                hole=0.62,
+                marker=dict(colors=cs_df['color'], line=dict(color='white', width=2)),
+                textinfo='percent',
+                textfont=dict(size=11, family='Inter', color='white'),
+                hovertemplate="<b>%{label}</b><br>Attempts: %{value:,}<br>Share of Total: %{percent}<extra></extra>"
+            ))
+            fig_donut.update_layout(
+                annotations=[dict(text=f"<b>{total_legs_val:,}</b><br><span style='font-size:11px'>Total Tries</span>", x=0.5, y=0.5, font_size=15, showarrow=False, font=dict(family='Inter', color=PALETTE['navy']))]
+            )
+            st.plotly_chart(apply_exec_chart_theme(fig_donut, height=360, show_legend=False, pad_l=10, pad_r=10, pad_t=25, pad_b=15))
+
+        st.markdown(f"""
+        <div style="display:flex; justify-content:center; gap:14px; font-size:11.8px; font-weight:600; margin-top:4px;">
+            <span style="color:{STATUS_COLORS['SENT']};">🟢 SENT: {int(filtered_df['sent_flag'].sum()):,} ({filtered_df['sent_flag'].mean()*100:.1f}%)</span>
+            <span style="color:{STATUS_COLORS['SKIPPED']};">🟡 SKIPPED: {int(filtered_df['skipped_flag'].sum()):,} ({filtered_df['skipped_flag'].mean()*100:.1f}%)</span>
+            <span style="color:{STATUS_COLORS['FAILED']};">🔴 FAILED: {int(filtered_df['failed_flag'].sum()):,} ({filtered_df['failed_flag'].mean()*100:.1f}%)</span>
+        </div>
+        """, unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
     ce1, ce2, ce3, ce4 = st.columns(4)
