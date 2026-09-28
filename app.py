@@ -1025,7 +1025,7 @@ def render_time_series():
     daily_df['success_rate'] = (daily_df['sent_count'] / daily_df['total_attempts'] * 100).round(1)
     daily_df['date_str']     = daily_df['notification_date'].astype(str)
 
-    col_t1, col_t2 = st.columns([1.5, 0.5])
+    col_t1, col_t2 = st.columns([1.15, 0.85])
 
     with col_t1:
         st.markdown('<div class="plot-card">', unsafe_allow_html=True)
@@ -1073,37 +1073,88 @@ def render_time_series():
     with col_t2:
         st.markdown('<div class="plot-card">', unsafe_allow_html=True)
         render_chart_header(
-            title="📆 Volume by Day of Week",
-            significance="Shows which days of the week have the highest notification activity — useful for spotting batch scheduling patterns or peak load days.",
-            calculation="Total delivery attempts counted per day name (Monday to Sunday), with each bar labelled by count and share percentage. The busiest day is highlighted.",
-            action="Consider spreading large batch sends across the week to avoid overloading the system on peak days."
+            title="📆 Volume by Day of Week &amp; Delivery Health",
+            significance="Shows notification activity across days of the week, broken down by delivery health (Sent, Skipped, Failed) to spot specific days with high drop-off rates.",
+            calculation="Cross-tab notification_day_name × status. Stacked bars: Green = SENT, Amber = SKIPPED, Crimson = FAILED. Total attempt counts shown on top of each day bar.",
+            action="Shift automated batch dispatches away from peak-failure days or investigate gateway throttling on high-load weekdays."
+        )
+
+        dow_mode = st.radio(
+            "Day of Week View:",
+            ["📊 Stacked by Delivery Status", "📆 Overall Volume (Peak Highlighted)"],
+            horizontal=True,
+            key="dow_view_mode"
         )
 
         day_order = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']
-        day_cnts  = filtered_df['notification_day_name'].value_counts().reindex(day_order).dropna().reset_index()
-        day_cnts.columns = ['Day','Count']
-        day_cnts['Pct'] = (day_cnts['Count'] / day_cnts['Count'].sum() * 100).round(1)
-        max_idx = day_cnts['Count'].idxmax()
+        dow_ct = pd.crosstab(filtered_df['notification_day_name'], filtered_df['status']).fillna(0)
+        for s in ['SENT', 'SKIPPED', 'FAILED']:
+            if s not in dow_ct.columns: dow_ct[s] = 0
+        dow_ct = dow_ct.reindex([d for d in day_order if d in dow_ct.index])
+        dow_totals = dow_ct[['SENT','SKIPPED','FAILED']].sum(axis=1)
 
-        fig_dow = go.Figure(go.Bar(
-            x=day_cnts['Day'], y=day_cnts['Count'],
-            marker=dict(
-                color=[PALETTE['navy'] if i == max_idx else PALETTE['sky'] for i in range(len(day_cnts))],
-                line=dict(color=PALETTE['border'], width=1)
-            ),
-            text=[f"<b>{c:,}</b><br>{p}%" for c, p in zip(day_cnts['Count'], day_cnts['Pct'])],
-            textposition='outside', textfont=dict(family='Inter', size=12.5, color=PALETTE['charcoal']),
-            cliponaxis=False,
-            customdata=day_cnts['Pct'],
-            hovertemplate="<b>%{x}</b><br>Volume: %{y:,}<br>Share: %{customdata:.1f}%<extra></extra>"
-        ))
-        fig_dow.update_layout(
-            xaxis=dict(title="", showgrid=False, tickangle=0, tickfont=dict(size=12, family='Inter')),
-            yaxis=dict(title="Volume", showgrid=True, gridcolor='#f1f5f9',
-                       range=[0, day_cnts['Count'].max() * 1.35]),
-            bargap=0.3
-        )
-        st.plotly_chart(apply_exec_chart_theme(fig_dow, height=400, show_legend=False, pad_l=50, pad_r=25, pad_t=45, pad_b=45), use_container_width=True)
+        if "Stacked" in dow_mode:
+            fig_dow = go.Figure()
+            for status, color in [('SENT', STATUS_COLORS['SENT']), ('SKIPPED', STATUS_COLORS['SKIPPED']), ('FAILED', STATUS_COLORS['FAILED'])]:
+                shares = [(v / dow_totals[d] * 100) if dow_totals[d] > 0 else 0 for d, v in zip(dow_ct.index, dow_ct[status])]
+                fig_dow.add_trace(go.Bar(
+                    x=list(dow_ct.index), y=dow_ct[status], name=status,
+                    marker_color=color, marker_line=dict(color='white', width=1),
+                    text=[f"<b>{int(v):,}</b>" if v >= 60 else "" for v in dow_ct[status]],
+                    textposition='inside', textfont=dict(size=11.5, color='white', family='Inter'),
+                    insidetextanchor='middle',
+                    customdata=shares,
+                    hovertemplate=f"<b>%{{x}} · {status}</b><br>Attempts: %{{y:,}}<br>Share of Day: %{{customdata:.1f}}%<extra></extra>"
+                ))
+
+            for d, total in zip(dow_ct.index, dow_totals):
+                fig_dow.add_annotation(
+                    x=d, y=total, text=f"<b>Total: {int(total):,}</b>",
+                    showarrow=False, yshift=14,
+                    font=dict(size=11.5, color=PALETTE['charcoal'], family='Inter')
+                )
+
+            fig_dow.update_layout(
+                barmode='stack',
+                xaxis=dict(title="", showgrid=False, tickangle=0, tickfont=dict(size=12, family='Inter', color=PALETTE['charcoal'])),
+                yaxis=dict(title="Delivery Attempts", showgrid=True, gridcolor='#f1f5f9',
+                           range=[0, dow_totals.max() * 1.30]),
+                bargap=0.32
+            )
+            st.plotly_chart(apply_exec_chart_theme(fig_dow, height=400, pad_l=50, pad_r=25, pad_t=60, pad_b=45), use_container_width=True)
+            st.markdown(f"""
+            <div style="display:flex; justify-content:center; gap:14px; font-size:11.8px; font-weight:600; margin-top:4px;">
+                <span style="color:{STATUS_COLORS['SENT']};">🟢 SENT: {int(filtered_df['sent_flag'].sum()):,} ({filtered_df['sent_flag'].mean()*100:.1f}%)</span>
+                <span style="color:{STATUS_COLORS['SKIPPED']};">🟡 SKIPPED: {int(filtered_df['skipped_flag'].sum()):,} ({filtered_df['skipped_flag'].mean()*100:.1f}%)</span>
+                <span style="color:{STATUS_COLORS['FAILED']};">🔴 FAILED: {int(filtered_df['failed_flag'].sum()):,} ({filtered_df['failed_flag'].mean()*100:.1f}%)</span>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            day_cnts = dow_totals.reset_index()
+            day_cnts.columns = ['Day', 'Count']
+            day_cnts['Pct'] = (day_cnts['Count'] / day_cnts['Count'].sum() * 100).round(1)
+            max_idx = day_cnts['Count'].idxmax()
+
+            fig_dow = go.Figure(go.Bar(
+                x=day_cnts['Day'], y=day_cnts['Count'],
+                marker=dict(
+                    color=[PALETTE['navy'] if i == max_idx else PALETTE['sky'] for i in range(len(day_cnts))],
+                    line=dict(color=PALETTE['border'], width=1)
+                ),
+                text=[f"<b>{c:,}</b><br>{p}%" for c, p in zip(day_cnts['Count'], day_cnts['Pct'])],
+                textposition='outside', textfont=dict(family='Inter', size=12.5, color=PALETTE['charcoal']),
+                cliponaxis=False,
+                customdata=day_cnts['Pct'],
+                hovertemplate="<b>%{x}</b><br>Volume: %{y:,}<br>Share: %{customdata:.1f}%<extra></extra>"
+            ))
+            fig_dow.update_layout(
+                xaxis=dict(title="", showgrid=False, tickangle=0, tickfont=dict(size=12, family='Inter')),
+                yaxis=dict(title="Volume", showgrid=True, gridcolor='#f1f5f9',
+                           range=[0, day_cnts['Count'].max() * 1.35]),
+                bargap=0.3
+            )
+            st.plotly_chart(apply_exec_chart_theme(fig_dow, height=400, show_legend=False, pad_l=50, pad_r=25, pad_t=45, pad_b=45), use_container_width=True)
+
         st.markdown('</div>', unsafe_allow_html=True)
 
 
